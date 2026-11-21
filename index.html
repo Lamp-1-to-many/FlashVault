@@ -2228,8 +2228,9 @@
       }
 
       /* ==================== NAVIGATION & BACK-BUTTON SUPPORT ==================== */
-      function switchView(viewName, pushHist) {
-        if (pushHist === undefined) pushHist = true;
+      let inAppDepth = 0;
+
+      function applyViewUI(viewName) {
         currentView = viewName;
         document.querySelectorAll('.page-view').forEach((sec) => {
           sec.classList.toggle('active', sec.id === 'view-' + viewName);
@@ -2239,12 +2240,6 @@
           btn.classList.toggle('active', target === viewName || (viewName === 'editor' && target === 'bank'));
         });
 
-        if (pushHist) {
-          try {
-            history.pushState({ view: viewName }, '', '#' + viewName);
-          } catch (e) {}
-        }
-
         if (viewName === 'home') renderHome();
         else if (viewName === 'practice') renderPracticeSetup();
         else if (viewName === 'bank') renderBank();
@@ -2252,11 +2247,40 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
 
+      function switchView(viewName, pushHist) {
+        if (pushHist === undefined) pushHist = true;
+        if (pushHist && viewName === 'home') {
+          if (inAppDepth > 0) {
+            try {
+              history.go(-inAppDepth);
+              return;
+            } catch (e) {}
+          }
+          inAppDepth = 0;
+          try {
+            history.replaceState({ view: 'home', depth: 0 }, '', '#home');
+          } catch (e) {}
+          applyViewUI('home');
+          return;
+        }
+
+        if (pushHist && viewName !== currentView) {
+          inAppDepth++;
+          try {
+            history.pushState({ view: viewName, depth: inAppDepth }, '', '#' + viewName);
+          } catch (e) {}
+        }
+
+        applyViewUI(viewName);
+      }
+
       window.addEventListener('popstate', function (e) {
         if (e.state && e.state.view) {
-          switchView(e.state.view, false);
+          inAppDepth = typeof e.state.depth === 'number' ? e.state.depth : (e.state.view === 'home' ? 0 : Math.max(0, inAppDepth - 1));
+          applyViewUI(e.state.view);
         } else {
-          switchView('home', false);
+          inAppDepth = 0;
+          applyViewUI('home');
         }
       });
 
@@ -3602,7 +3626,8 @@
         bindEvents();
         initOfflinePersistence();
         try {
-          history.replaceState({ view: 'home' }, '', '#home');
+          inAppDepth = 0;
+          history.replaceState({ view: 'home', depth: 0 }, '', '#home');
         } catch (e) {}
         renderHome();
       }
