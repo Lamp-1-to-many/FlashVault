@@ -1,5 +1,11 @@
-const CACHE_NAME = 'flashvault-sw-v1';
-const ASSETS = ['./', './index.html'];
+const CACHE_NAME = 'flashvault-sw-v2';
+const ASSETS = [
+  './',
+  './index.html',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png'
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
