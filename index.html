@@ -1,0 +1,3612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlashVault — Bilingual Smart Flashcards</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ea580c'/%3E%3Crect x='18' y='13' width='32' height='36' rx='5' fill='%23fdba74' opacity='0.65' transform='rotate(-6 34 31)'/%3E%3Crect x='14' y='17' width='34' height='36' rx='5' fill='%23ffffff'/%3E%3Cpath d='M33 24l-7 11h6l-1 8 7-11h-6z' fill='%23ea580c'/%3E%3C/svg%3E" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ea580c'/%3E%3Crect x='18' y='13' width='32' height='36' rx='5' fill='%23fdba74' opacity='0.65' transform='rotate(-6 34 31)'/%3E%3Crect x='14' y='17' width='34' height='36' rx='5' fill='%23ffffff'/%3E%3Cpath d='M33 24l-7 11h6l-1 8 7-11h-6z' fill='%23ea580c'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --bg: #fffaf5;
+      --surface: #ffffff;
+      --surface-2: #fff3e6;
+      --border: #eed9c4;
+      --text: #1f140d;
+      --text-muted: #6b4f3b;
+      --primary: #ea580c;
+      --primary-hover: #c2410c;
+      --primary-soft: #ffedd5;
+      --easy: #059669;
+      --easy-soft: #ecfdf5;
+      --easy-border: #a7f3d0;
+      --good: #0284c7;
+      --good-soft: #f0f9ff;
+      --good-border: #bae6fd;
+      --hard: #dc2626;
+      --hard-soft: #fef2f2;
+      --hard-border: #fecaca;
+      --new-c: #d97706;
+      --new-soft: #fef3c7;
+      --warn: #d97706;
+      --warn-soft: #fffbeb;
+      --code-bg: #1c1410;
+      --code-text: #fff7ed;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 1px 3px rgba(31, 20, 13, 0.08), 0 1px 2px rgba(31, 20, 13, 0.04);
+      --shadow-md: 0 6px 20px rgba(31, 20, 13, 0.09);
+      --font-sans: 'Inter', 'Noto Sans Devanagari', 'Kohinoor Devanagari', 'Mangal', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+    }
+
+    html.dark {
+      --bg: #120d0a;
+      --surface: #1c1410;
+      --surface-2: #291d16;
+      --border: #3d2b20;
+      --text: #fff7ed;
+      --text-muted: #d6b8a3;
+      --primary: #f97316;
+      --primary-hover: #fb923c;
+      --primary-soft: rgba(249, 115, 22, 0.18);
+      --easy: #34d399;
+      --easy-soft: rgba(16, 185, 129, 0.14);
+      --easy-border: rgba(52, 211, 153, 0.35);
+      --good: #38bdf8;
+      --good-soft: rgba(56, 189, 248, 0.14);
+      --good-border: rgba(56, 189, 248, 0.35);
+      --hard: #f87171;
+      --hard-soft: rgba(248, 113, 113, 0.14);
+      --hard-border: rgba(248, 113, 113, 0.35);
+      --new-c: #fbbf24;
+      --new-soft: rgba(251, 191, 36, 0.16);
+      --warn: #fbbf24;
+      --warn-soft: rgba(245, 158, 11, 0.15);
+      --code-bg: #0b0705;
+      --code-text: #ffedd5;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.68;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header & Navigation */
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .header-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0.65rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--text);
+      background: none;
+      border: none;
+      padding: 0.25rem 0;
+      cursor: pointer;
+      line-height: 1.4;
+    }
+
+    .brand-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--primary);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+
+    .nav-tabs {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .nav-tabs::-webkit-scrollbar { display: none; }
+
+    .nav-btn {
+      min-height: 40px;
+      padding: 0.45rem 0.9rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 600;
+      line-height: 1.45;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .nav-btn:hover {
+      background: var(--surface-2);
+      color: var(--text);
+    }
+
+    .nav-btn.active {
+      background: var(--primary-soft);
+      color: var(--primary);
+      border-color: rgba(234, 88, 12, 0.3);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-left: auto;
+    }
+
+    @media (max-width: 720px) {
+      .nav-tabs {
+        order: 3;
+        width: 100%;
+        padding-top: 0.35rem;
+        border-top: 1px solid var(--border);
+      }
+    }
+
+    /* Uniform Buttons for English & Hindi */
+    .btn {
+      min-height: 42px;
+      padding: 0.5rem 0.95rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      line-height: 1.5;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      text-align: center;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+      text-decoration: none;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: var(--surface-2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-sm {
+      min-height: 36px;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.84rem;
+      line-height: 1.45;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+    }
+
+    .btn-danger {
+      background: var(--hard-soft);
+      color: var(--hard);
+      border-color: var(--hard-border);
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background: var(--hard);
+      color: #ffffff;
+    }
+
+    .btn-easy {
+      background: var(--easy-soft);
+      color: var(--easy);
+      border-color: var(--easy-border);
+    }
+    .btn-easy:hover:not(:disabled) {
+      background: var(--easy);
+      color: #ffffff;
+    }
+
+    .btn-good {
+      background: var(--good-soft);
+      color: var(--good);
+      border-color: var(--good-border);
+    }
+    .btn-good:hover:not(:disabled) {
+      background: var(--good);
+      color: #ffffff;
+    }
+
+    .btn-hard {
+      background: var(--hard-soft);
+      color: var(--hard);
+      border-color: var(--hard-border);
+    }
+    .btn-hard:hover:not(:disabled) {
+      background: var(--hard);
+      color: #ffffff;
+    }
+
+    /* Main Container */
+    .main-wrap {
+      max-width: 1120px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.25rem 1rem 3rem;
+      flex: 1;
+    }
+
+    .page-view {
+      display: none;
+    }
+
+    .page-view.active {
+      display: block;
+    }
+
+    #view-home,
+    #view-practice {
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    #view-practice input,
+    #view-practice select {
+      -webkit-user-select: auto;
+      user-select: auto;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+
+    .page-title {
+      margin: 0;
+      font-size: 1.45rem;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .page-subtitle {
+      margin: 0.25rem 0 0;
+      color: var(--text-muted);
+      font-size: 0.94rem;
+      line-height: 1.6;
+    }
+
+    /* Cards & Panels */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.15rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1rem;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.85rem;
+      margin-bottom: 1rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.85rem;
+      margin-bottom: 1rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .uniform-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+      align-items: stretch;
+    }
+
+    .uniform-grid > .panel {
+      margin-bottom: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @media (max-width: 860px) {
+      .uniform-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 860px) {
+      .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 520px) {
+      .grid-4, .grid-3 { grid-template-columns: 1fr; }
+      .header-inner { padding: 0.55rem 0.75rem; }
+      .nav-btn { padding: 0.4rem 0.65rem; font-size: 0.85rem; }
+    }
+
+    /* Stat Cards */
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .stat-label {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .stat-val {
+      font-size: 1.75rem;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .stat-meta {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .stat-easy .stat-val { color: var(--easy); }
+    .stat-good .stat-val { color: var(--good); }
+    .stat-hard .stat-val { color: var(--hard); }
+    .stat-new .stat-val { color: var(--new-c); }
+
+    /* Progress Bar */
+    .progress-track {
+      width: 100%;
+      height: 12px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      overflow: hidden;
+      display: flex;
+      border: 1px solid var(--border);
+    }
+
+    .progress-seg {
+      height: 100%;
+      transition: width 0.25s ease;
+    }
+
+    /* Form Controls */
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 0.35rem;
+      line-height: 1.5;
+    }
+
+    .form-hint {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+      line-height: 1.5;
+    }
+
+    .input, .select, .textarea {
+      width: 100%;
+      min-height: 42px;
+      padding: 0.55rem 0.8rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.95rem;
+      line-height: 1.65;
+      transition: border-color 0.15s ease;
+    }
+
+    .textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .input:focus, .select:focus, .textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-soft);
+    }
+
+    /* Rich Editor Toolbar */
+    .editor-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+      padding: 0.4rem;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    }
+
+    .editor-toolbar + .textarea {
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+
+    .tb-btn {
+      min-height: 32px;
+      padding: 0.25rem 0.55rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      line-height: 1.4;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tb-btn:hover {
+      background: var(--primary-soft);
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .preview-box {
+      margin-top: 0.45rem;
+      padding: 0.75rem 0.9rem;
+      background: var(--surface-2);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-sm);
+      min-height: 48px;
+      line-height: 1.75;
+      overflow-wrap: anywhere;
+    }
+
+    .preview-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      margin-bottom: 0.3rem;
+    }
+
+    /* Badges & Chips */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 26px;
+      padding: 0.15rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      line-height: 1.4;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .badge-easy { background: var(--easy-soft); color: var(--easy); border-color: var(--easy-border); }
+    .badge-good { background: var(--good-soft); color: var(--good); border-color: var(--good-border); }
+    .badge-hard { background: var(--hard-soft); color: var(--hard); border-color: var(--hard-border); }
+    .badge-new { background: var(--new-soft); color: var(--new-c); }
+    .badge-neutral { background: var(--surface-2); color: var(--text-muted); border-color: var(--border); }
+
+    .chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+
+    .topic-chip {
+      min-height: 38px;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 500;
+      line-height: 1.45;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .topic-chip.selected {
+      background: var(--primary-soft);
+      color: var(--primary);
+      border-color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* Bank Toolbar & Grouped Cards */
+    .toolbar-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+    }
+
+    .search-wrap {
+      flex: 1 1 240px;
+      position: relative;
+    }
+
+    .subject-group {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .subject-header {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      background: var(--surface-2);
+      border: none;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .topic-group {
+      border-bottom: 1px solid var(--border);
+    }
+    .topic-group:last-child {
+      border-bottom: none;
+    }
+
+    .topic-header {
+      width: 100%;
+      padding: 0.65rem 1rem;
+      background: var(--surface);
+      border: none;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.94rem;
+      font-weight: 600;
+      line-height: 1.5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.6rem;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .topic-header:hover {
+      background: var(--surface-2);
+    }
+
+    .topic-cards {
+      padding: 0.75rem 0.9rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      background: var(--surface);
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* Bank Card Item: clean box outline only, full screen-width fit */
+    .bank-card {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem 1rem;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .bank-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      padding-bottom: 0.55rem;
+      margin-bottom: 0.65rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .bank-card-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+
+    .bank-card-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .bank-card-body {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+      width: 100%;
+      min-width: 0;
+    }
+
+    .card-side-box {
+      background: transparent;
+      padding: 0.15rem 0;
+      line-height: 1.75;
+      overflow-wrap: anywhere;
+      min-width: 0;
+    }
+
+    .card-side-box + .card-side-box {
+      border-left: 1px solid var(--border);
+      padding-left: 1rem;
+    }
+
+    .bank-card-tags {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.7rem;
+      padding-top: 0.55rem;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 700px) {
+      .topic-cards {
+        padding: 0.6rem;
+      }
+      .bank-card {
+        padding: 0.75rem;
+      }
+      .bank-card-body {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+      .card-side-box + .card-side-box {
+        border-left: none;
+        padding-left: 0;
+        border-top: 1px dashed var(--border);
+        padding-top: 0.65rem;
+      }
+    }
+
+    .card-side-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    /* Practice Stage */
+    .flashcard-stage {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .flashcard-scene {
+      perspective: 1200px;
+    }
+
+    .flashcard-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      min-height: 280px;
+      padding: 1.35rem 1.5rem;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      align-items: center;
+      cursor: pointer;
+      transform-style: preserve-3d;
+      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.15s ease;
+    }
+
+    .flashcard-box.is-flipped {
+      transform: rotateY(180deg);
+    }
+
+    .flashcard-box.no-transition {
+      transition: none !important;
+    }
+
+    .flashcard-face {
+      grid-area: 1 / 1;
+      width: 100%;
+      min-width: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    #activeCardFront {
+      transform: rotateY(0deg);
+    }
+
+    #activeCardBack {
+      transform: rotateY(180deg);
+    }
+
+    .flashcard-box:hover {
+      border-color: var(--primary);
+    }
+
+    .flashcard-content {
+      font-size: 1.12rem;
+      line-height: 1.8;
+      margin: 1rem 0;
+      overflow-wrap: anywhere;
+    }
+
+    .flashcard-img {
+      max-width: 100%;
+      max-height: 260px;
+      height: auto;
+      border-radius: var(--radius-sm);
+      margin-top: 0.75rem;
+      border: 1px solid var(--border);
+      display: block;
+    }
+
+    .rating-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 540px) {
+      .rating-grid { grid-template-columns: 1fr; }
+    }
+
+    .rating-btn {
+      min-height: 54px;
+      padding: 0.65rem 1rem;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .rating-sub {
+      font-size: 0.76rem;
+      font-weight: 500;
+      opacity: 0.88;
+    }
+
+    /* Rich Content Rendering: Code, Math, Lists, Tables */
+    .rich-content p { margin: 0 0 0.55rem; }
+    .rich-content p:last-child { margin-bottom: 0; }
+    .rich-content ul, .rich-content ol {
+      margin: 0.35rem 0 0.55rem;
+      padding-left: 1.35rem;
+    }
+    .rich-content li { margin-bottom: 0.25rem; line-height: 1.7; }
+    .rich-content blockquote {
+      margin: 0.45rem 0;
+      padding: 0.45rem 0.8rem;
+      border-left: 3px solid var(--primary);
+      background: var(--primary-soft);
+      border-radius: 0 6px 6px 0;
+    }
+    .rich-content mark {
+      background: #fef08a;
+      color: #0f172a;
+      padding: 0.08rem 0.28rem;
+      border-radius: 4px;
+    }
+    .rich-content code.inline-code {
+      font-family: var(--font-mono);
+      font-size: 0.88em;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 0.1rem 0.35rem;
+      border-radius: 5px;
+    }
+    .rich-content pre.code-block {
+      font-family: var(--font-mono);
+      font-size: 0.86rem;
+      line-height: 1.55;
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 0.75rem 0.9rem;
+      border-radius: var(--radius-sm);
+      overflow-x: auto;
+      margin: 0.5rem 0;
+    }
+    .math-display {
+      display: block;
+      text-align: center;
+      margin: 0.65rem 0;
+      padding: 0.45rem 0.6rem;
+      overflow-x: auto;
+      font-size: 1.08em;
+    }
+    .math-inline {
+      display: inline-block;
+      padding: 0 0.15rem;
+      vertical-align: middle;
+    }
+    math {
+      font-family: 'Cambria Math', 'STIX Two Math', 'Latin Modern Math', serif;
+      font-size: 1.06em;
+    }
+
+    /* Modals & Toasts */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      z-index: 60;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-backdrop.open {
+      display: flex;
+    }
+    .modal-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      max-width: 680px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 1.25rem;
+      box-shadow: var(--shadow-md);
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.9rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-title {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .toast-wrap {
+      position: fixed;
+      bottom: 1.25rem;
+      right: 1.25rem;
+      z-index: 80;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-width: 360px;
+    }
+    .toast {
+      background: var(--text);
+      color: var(--surface);
+      padding: 0.7rem 1rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      font-weight: 500;
+      line-height: 1.5;
+      box-shadow: var(--shadow-md);
+    }
+
+    .guide-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin: 0.6rem 0;
+    }
+    .guide-table th, .guide-table td {
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.65rem;
+      text-align: left;
+      line-height: 1.55;
+    }
+    .guide-table th {
+      background: var(--surface-2);
+      font-weight: 700;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 2.2rem 1rem;
+      color: var(--text-muted);
+    }
+
+    .checkbox-input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <button type="button" class="brand" id="brandHomeBtn" aria-label="FlashVault Home">
+        <span class="brand-badge" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 64 64" fill="none"><rect x="18" y="12" width="32" height="36" rx="5" fill="#fdba74" opacity="0.7" transform="rotate(-6 34 30)"/><rect x="14" y="16" width="34" height="36" rx="5" fill="#ffffff"/><path d="M33 23l-7 11h6l-1 8 7-11h-6z" fill="#ea580c"/></svg></span>
+        <span>FlashVault</span>
+      </button>
+
+      <nav class="nav-tabs" aria-label="Main Navigation">
+        <button type="button" class="nav-btn active" data-nav="home">Home</button>
+        <button type="button" class="nav-btn" data-nav="practice">Practice</button>
+        <button type="button" class="nav-btn" data-nav="bank">Cards Bank</button>
+        <button type="button" class="nav-btn" data-nav="about">About &amp; Guide</button>
+      </nav>
+
+      <div class="header-actions">
+        <button type="button" class="btn btn-sm" id="themeToggleBtn" aria-label="Toggle Dark Mode" title="Toggle Dark Mode" style="min-width:40px; padding:0.4rem 0.55rem;"></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-wrap">
+    <!-- ==================== HOME PAGE ==================== -->
+    <section id="view-home" class="page-view active" aria-labelledby="homeTitle">
+      <div class="page-header">
+        <div>
+          <h1 id="homeTitle" class="page-title">Welcome to FlashVault</h1>
+          <p class="page-subtitle">Offline bilingual (English &amp; हिन्दी) flashcard workspace with rich text, math, code, and images.</p>
+        </div>
+        <div class="toolbar-row">
+          <button type="button" class="btn btn-primary" id="homeStartPracticeBtn">Start Practice</button>
+          <button type="button" class="btn" id="homeAddCardBtn">+ Add Card</button>
+        </div>
+      </div>
+
+      <div class="grid-4" id="homeStatsGrid">
+        <div class="stat-card">
+          <span class="stat-label">Total Cards</span>
+          <span class="stat-val" id="statTotal">0</span>
+          <span class="stat-meta" id="statSubjectsMeta">0 subjects</span>
+        </div>
+        <div class="stat-card stat-easy">
+          <span class="stat-label">Easy (Mastered)</span>
+          <span class="stat-val" id="statEasy">0</span>
+          <span class="stat-meta" id="statEasyPct">0% of bank</span>
+        </div>
+        <div class="stat-card stat-good">
+          <span class="stat-label">Good (Steady)</span>
+          <span class="stat-val" id="statGood">0</span>
+          <span class="stat-meta" id="statGoodPct">0% of bank</span>
+        </div>
+        <div class="stat-card stat-hard">
+          <span class="stat-label">Hard (Needs Focus)</span>
+          <span class="stat-val" id="statHard">0</span>
+          <span class="stat-meta" id="statHardPct">0% of bank</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem; flex-wrap:wrap; margin-bottom:0.6rem;">
+          <div>
+            <h2 style="margin:0; font-size:1.08rem;">Daily Study Streak &amp; Goal</h2>
+            <p class="page-subtitle" id="dailyGoalSubtitle" style="margin:0.15rem 0 0;">0 of 20 cards reviewed today</p>
+          </div>
+          <div class="toolbar-row">
+            <span class="badge badge-new" id="studyStreakBadge">Streak: 0 days</span>
+            <label style="display:inline-flex; align-items:center; gap:0.35rem; font-size:0.86rem; font-weight:600; color:var(--text-muted);">
+              <span>Goal:</span>
+              <input type="number" id="dailyGoalInput" class="input" min="1" max="500" value="20" style="width:74px; min-height:34px; padding:0.25rem 0.5rem; font-size:0.88rem;" />
+            </label>
+          </div>
+        </div>
+        <div class="progress-track" aria-label="Daily goal progress">
+          <div class="progress-seg" id="dailyGoalBar" style="background:var(--primary); width:0%;"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="page-header" style="margin-bottom:0.65rem;">
+          <div>
+            <h2 style="margin:0; font-size:1.08rem;">Difficulty &amp; Mastery Breakdown</h2>
+            <p class="page-subtitle" id="masterySummaryText">Practice cards to track your Easy, Good, Hard, and Unpracticed progress.</p>
+          </div>
+          <span class="badge badge-new" id="statUnpracticedBadge">0 Unpracticed</span>
+        </div>
+        <div class="progress-track" aria-label="Difficulty distribution bar">
+          <div class="progress-seg" id="barEasy" style="background:var(--easy); width:0%"></div>
+          <div class="progress-seg" id="barGood" style="background:var(--good); width:0%"></div>
+          <div class="progress-seg" id="barHard" style="background:var(--hard); width:0%"></div>
+          <div class="progress-seg" id="barNew" style="background:var(--new-c); width:0%"></div>
+        </div>
+        <div class="toolbar-row" style="margin-top:0.85rem;">
+          <button type="button" class="btn btn-sm btn-hard" id="quickHardBtn">Practice Hard Cards</button>
+          <button type="button" class="btn btn-sm btn-good" id="quickGoodBtn">Practice Good Cards</button>
+          <button type="button" class="btn btn-sm btn-easy" id="quickEasyBtn">Review Easy Cards</button>
+          <button type="button" class="btn btn-sm" id="quickDueBtn">Review Due Cards</button>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h2 style="margin:0 0 0.75rem; font-size:1.08rem;">Practiced Cards by Difficulty</h2>
+          <div id="homeDifficultyTabs" class="chip-group" style="margin-bottom:0.75rem;">
+            <button type="button" class="topic-chip selected" data-homediff="hard">Hard</button>
+            <button type="button" class="topic-chip" data-homediff="good">Good</button>
+            <button type="button" class="topic-chip" data-homediff="easy">Easy</button>
+            <button type="button" class="topic-chip" data-homediff="new">Unpracticed</button>
+          </div>
+          <div id="homeDifficultyList"></div>
+        </div>
+
+        <div class="panel">
+          <h2 style="margin:0 0 0.75rem; font-size:1.08rem;">Subjects Overview &amp; Quick Stats</h2>
+          <div id="homeSubjectOverview"></div>
+          <div style="margin-top:0.9rem; padding-top:0.75rem; border-top:1px solid var(--border); display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+            <span class="stat-meta" id="totalReviewsMeta">Total review sessions logged: 0</span>
+            <span class="stat-meta" id="dueCountMeta">Due for review now: 0</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PRACTICE PAGE ==================== -->
+    <section id="view-practice" class="page-view" aria-labelledby="practiceTitle">
+      <div class="page-header" id="practicePageHeader">
+        <div>
+          <h1 id="practiceTitle" class="page-title">Card Practice</h1>
+          <p class="page-subtitle">Choose a subject, select one or more topics, set card count, and rate Easy, Good, or Hard.</p>
+        </div>
+      </div>
+
+      <!-- Practice Setup -->
+      <div id="practiceSetupPanel" class="panel">
+        <div class="grid-3">
+          <div class="form-group">
+            <label class="form-label" for="practiceSubjectSelect">1. Select Subject</label>
+            <select id="practiceSubjectSelect" class="select"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="practiceDifficultyFilter">2. Difficulty Filter</label>
+            <select id="practiceDifficultyFilter" class="select">
+              <option value="all">All Cards (Recommended)</option>
+              <option value="due">Due for Review / Unpracticed</option>
+              <option value="hard">Hard Cards Only</option>
+              <option value="good">Good Cards Only</option>
+              <option value="easy">Easy Cards Only</option>
+              <option value="new">Unpracticed Only</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="practiceTagFilter">3. Tag Filter (Optional)</label>
+            <select id="practiceTagFilter" class="select">
+              <option value="all">All Tags</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.4rem;">
+            <label class="form-label" style="margin:0;">3. Select Topics (Multiple Allowed)</label>
+            <div class="toolbar-row">
+              <button type="button" class="btn btn-sm" id="selectAllTopicsBtn">Select All</button>
+              <button type="button" class="btn btn-sm" id="clearTopicsBtn">Clear</button>
+            </div>
+          </div>
+          <div id="practiceTopicChips" class="chip-group"></div>
+          <div class="form-hint" id="practiceMatchingCountHint">0 matching cards available</div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="practiceCountInput">4. Number of Cards</label>
+            <div class="toolbar-row">
+              <input type="number" id="practiceCountInput" class="input" style="max-width:130px;" min="1" max="500" value="10" />
+              <button type="button" class="btn btn-sm preset-count-btn" data-count="5">5</button>
+              <button type="button" class="btn btn-sm preset-count-btn" data-count="10">10</button>
+              <button type="button" class="btn btn-sm preset-count-btn" data-count="20">20</button>
+              <button type="button" class="btn btn-sm preset-count-btn" data-count="9999">All</button>
+            </div>
+          </div>
+          <div class="form-group" style="display:flex; align-items:flex-end; gap:0.75rem; flex-wrap:wrap;">
+            <label style="display:inline-flex; align-items:center; gap:0.45rem; cursor:pointer; min-height:42px;">
+              <input type="checkbox" id="practiceShuffleChk" class="checkbox-input" checked />
+              <span>Shuffle cards</span>
+            </label>
+            <label style="display:inline-flex; align-items:center; gap:0.45rem; cursor:pointer; min-height:42px;">
+              <input type="checkbox" id="practiceRetryHardChk" class="checkbox-input" checked />
+              <span>Retry Hard cards</span>
+            </label>
+            <button type="button" class="btn btn-primary" id="beginSessionBtn">Start Practice Session</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Practice Stage -->
+      <div id="practiceActiveStage" class="flashcard-stage" style="display:none;">
+        <div style="margin-bottom:0.85rem;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; margin-bottom:0.4rem;">
+            <span id="activeSubjectName" style="font-weight:700; font-size:0.98rem;"></span>
+            <span id="sessionProgressLabel" class="stat-meta" style="font-weight:600;">1 / 10</span>
+          </div>
+          <div class="progress-track" style="height:8px;">
+            <div class="progress-seg" id="sessionProgressBar" style="background:var(--primary); width:0%;"></div>
+          </div>
+        </div>
+
+        <div class="flashcard-scene">
+          <div class="flashcard-box" id="flashcardBox" role="button" tabindex="0" aria-label="Flip flashcard">
+            <div class="flashcard-face flashcard-content rich-content" id="activeCardFront" style="margin:0;"></div>
+            <div class="flashcard-face flashcard-content rich-content" id="activeCardBack" style="margin:0;"></div>
+          </div>
+        </div>
+
+        <div class="toolbar-row" style="margin-top:1rem; justify-content:center;">
+          <button type="button" class="btn btn-primary" id="flipCardBtn" style="min-width:140px;">Show Answer</button>
+          <button type="button" class="btn" id="nextCardBtn" style="min-width:140px;">Next Card</button>
+        </div>
+
+        <div id="ratingSection" class="rating-grid" style="margin-top:0.75rem;">
+          <button type="button" class="btn btn-easy rating-btn" data-rate="easy">Easy</button>
+          <button type="button" class="btn btn-good rating-btn" data-rate="good">Good</button>
+          <button type="button" class="btn btn-hard rating-btn" data-rate="hard">Hard</button>
+        </div>
+      </div>
+
+      <!-- Session Summary -->
+      <div id="practiceSummaryPanel" class="panel flashcard-stage" style="display:none;">
+        <h2 style="margin:0 0 0.4rem;">Practice Session Complete</h2>
+        <p class="page-subtitle" id="summarySubtitle">Great work! Here is your rating breakdown for this session.</p>
+        <div class="grid-3" style="margin-top:1rem;">
+          <div class="stat-card stat-easy">
+            <span class="stat-label">Easy</span>
+            <span class="stat-val" id="sumEasy">0</span>
+          </div>
+          <div class="stat-card stat-good">
+            <span class="stat-label">Good</span>
+            <span class="stat-val" id="sumGood">0</span>
+          </div>
+          <div class="stat-card stat-hard">
+            <span class="stat-label">Hard</span>
+            <span class="stat-val" id="sumHard">0</span>
+          </div>
+        </div>
+        <div class="toolbar-row">
+          <button type="button" class="btn btn-hard" id="retryHardSessionBtn" style="display:none;">Practice Hard Cards Again</button>
+          <button type="button" class="btn btn-primary" id="newPracticeSetupBtn">New Practice Session</button>
+          <button type="button" class="btn" id="summaryGoHomeBtn">Back to Home</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== CARDS BANK PAGE ==================== -->
+    <section id="view-bank" class="page-view" aria-labelledby="bankTitle">
+      <div class="page-header">
+        <div>
+          <h1 id="bankTitle" class="page-title">Cards Bank</h1>
+          <p class="page-subtitle">Browse by subject and topic, search, edit, bulk delete, import CSV/JSON, or create encrypted backups.</p>
+        </div>
+        <div class="toolbar-row">
+          <button type="button" class="btn btn-primary" id="bankAddCardBtn">+ Add New Card</button>
+          <button type="button" class="btn" id="openImportModalBtn">Bulk Import (CSV / JSON)</button>
+          <button type="button" class="btn" id="openExportModalBtn">Export (CSV / JSON)</button>
+          <button type="button" class="btn" id="openBackupModalBtn">Encrypted Backup</button>
+          <button type="button" class="btn" id="openRestoreModalBtn">Restore Backup</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="toolbar-row">
+          <div class="search-wrap">
+            <input type="search" id="bankSearchInput" class="input" placeholder="Search subject, topic, front, back, or tags (English / हिन्दी)..." />
+          </div>
+          <select id="bankSubjectFilter" class="select" style="width:auto; min-width:160px;">
+            <option value="all">All Subjects</option>
+          </select>
+          <select id="bankDiffFilter" class="select" style="width:auto; min-width:145px;">
+            <option value="all">All Difficulties</option>
+            <option value="hard">Hard</option>
+            <option value="good">Good</option>
+            <option value="easy">Easy</option>
+            <option value="new">Unpracticed</option>
+          </select>
+          <select id="bankTagFilter" class="select" style="width:auto; min-width:140px;">
+            <option value="all">All Tags</option>
+          </select>
+          <button type="button" class="btn btn-sm" id="toggleAllGroupsBtn">Collapse All</button>
+        </div>
+
+        <div class="toolbar-row" style="margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid var(--border); justify-content:space-between;">
+          <div class="toolbar-row">
+            <button type="button" class="btn btn-sm" id="selectVisibleBtn">Select Visible</button>
+            <button type="button" class="btn btn-sm" id="clearSelectionBtn">Clear Selection</button>
+            <span class="stat-meta" id="bankCountSummary">Showing 0 cards</span> <span class="stat-meta" id="storageQuotaMeta"></span>
+          </div>
+          <button type="button" class="btn btn-sm btn-danger" id="bulkDeleteBtn" disabled>Bulk Delete (0)</button>
+        </div>
+      </div>
+
+      <div id="bankGroupsContainer"></div>
+    </section>
+
+    <!-- ==================== ADD / EDIT CARD PAGE ==================== -->
+    <section id="view-editor" class="page-view" aria-labelledby="editorTitle">
+      <div class="page-header">
+        <div>
+          <h1 id="editorTitle" class="page-title">Add New Flashcard</h1>
+          <p class="page-subtitle">Supports English &amp; हिन्दी, rich text, LaTeX math ($...$ / $$...$$), code blocks, and images.</p>
+        </div>
+        <button type="button" class="btn" id="editorCancelBtn">Back to Cards Bank</button>
+      </div>
+
+      <form id="cardEditorForm" class="panel">
+        <input type="hidden" id="editCardId" value="" />
+        <div class="grid-3">
+          <div class="form-group">
+            <label class="form-label" for="cardSubjectInput">Subject *</label>
+            <input type="text" id="cardSubjectInput" class="input" list="subjectDatalist" placeholder="e.g., Physics, हिन्दी व्याकरण" required />
+            <datalist id="subjectDatalist"></datalist>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="cardTopicInput">Topic *</label>
+            <input type="text" id="cardTopicInput" class="input" list="topicDatalist" placeholder="e.g., Optics, संधि" required />
+            <datalist id="topicDatalist"></datalist>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="cardSubtopicInput">Subtopic</label>
+            <input type="text" id="cardSubtopicInput" class="input" placeholder="e.g., Snell's Law, स्वर संधि" />
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <!-- Front of Card -->
+          <div class="form-group">
+            <label class="form-label" for="cardFrontInput">Front of Card *</label>
+            <div class="editor-toolbar" data-target="cardFrontInput">
+              <button type="button" class="tb-btn" data-wrap="**" title="Bold"><b>B</b></button>
+              <button type="button" class="tb-btn" data-wrap="*" title="Italic"><i>I</i></button>
+              <button type="button" class="tb-btn" data-wrap="__" title="Underline"><u>U</u></button>
+              <button type="button" class="tb-btn" data-wrap="==" title="Highlight">Mark</button>
+              <button type="button" class="tb-btn" data-wrap="`" title="Inline Code">Code</button>
+              <button type="button" class="tb-btn" data-insert="&#10;```python&#10;# code&#10;```&#10;" title="Code Block">Block</button>
+              <button type="button" class="tb-btn" data-wrap="$" title="Inline Math">$x$</button>
+              <button type="button" class="tb-btn" data-insert="$$\frac{a}{b}$$" title="Display Math">$$Math$$</button>
+              <button type="button" class="tb-btn" data-insert="&#10;- " title="Bullet List">List</button>
+            </div>
+            <textarea id="cardFrontInput" class="textarea" placeholder="Enter question or prompt (English / हिन्दी)..." required></textarea>
+            <div class="toolbar-row" style="margin-top:0.45rem;">
+              <label class="btn btn-sm" style="cursor:pointer;">
+                Attach Image
+                <input type="file" id="frontImageFile" accept="image/*" style="display:none;" />
+              </label>
+              <input type="url" id="frontImageUrl" class="input" style="flex:1; min-height:36px; padding:0.35rem 0.65rem; font-size:0.84rem;" placeholder="Or paste image URL..." />
+              <button type="button" class="btn btn-sm" id="clearFrontImgBtn" style="display:none;">Remove</button>
+            </div>
+            <div id="frontImgPreviewWrap" style="margin-top:0.4rem;"></div>
+            <div class="preview-label" style="margin-top:0.55rem;">Front Live Preview</div>
+            <div class="preview-box rich-content" id="frontLivePreview"></div>
+          </div>
+
+          <!-- Back of Card -->
+          <div class="form-group">
+            <label class="form-label" for="cardBackInput">Back of Card *</label>
+            <div class="editor-toolbar" data-target="cardBackInput">
+              <button type="button" class="tb-btn" data-wrap="**" title="Bold"><b>B</b></button>
+              <button type="button" class="tb-btn" data-wrap="*" title="Italic"><i>I</i></button>
+              <button type="button" class="tb-btn" data-wrap="__" title="Underline"><u>U</u></button>
+              <button type="button" class="tb-btn" data-wrap="==" title="Highlight">Mark</button>
+              <button type="button" class="tb-btn" data-wrap="`" title="Inline Code">Code</button>
+              <button type="button" class="tb-btn" data-insert="&#10;```python&#10;# code&#10;```&#10;" title="Code Block">Block</button>
+              <button type="button" class="tb-btn" data-wrap="$" title="Inline Math">$x$</button>
+              <button type="button" class="tb-btn" data-insert="$$\frac{a}{b}$$" title="Display Math">$$Math$$</button>
+              <button type="button" class="tb-btn" data-insert="&#10;- " title="Bullet List">List</button>
+            </div>
+            <textarea id="cardBackInput" class="textarea" placeholder="Enter answer, formula, or explanation..." required></textarea>
+            <div class="toolbar-row" style="margin-top:0.45rem;">
+              <label class="btn btn-sm" style="cursor:pointer;">
+                Attach Image
+                <input type="file" id="backImageFile" accept="image/*" style="display:none;" />
+              </label>
+              <input type="url" id="backImageUrl" class="input" style="flex:1; min-height:36px; padding:0.35rem 0.65rem; font-size:0.84rem;" placeholder="Or paste image URL..." />
+              <button type="button" class="btn btn-sm" id="clearBackImgBtn" style="display:none;">Remove</button>
+            </div>
+            <div id="backImgPreviewWrap" style="margin-top:0.4rem;"></div>
+            <div class="preview-label" style="margin-top:0.55rem;">Back Live Preview</div>
+            <div class="preview-box rich-content" id="backLivePreview"></div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cardTagsInput">Tags (Optional)</label>
+          <input type="text" id="cardTagsInput" class="input" placeholder="Comma-separated, e.g., important, formula, exam-2026, महत्वपूर्ण" />
+        </div>
+
+        <div class="toolbar-row" style="justify-content:flex-end;">
+          <button type="button" class="btn" id="editorResetBtn">Reset</button>
+          <button type="submit" class="btn btn-primary" id="editorSaveBtn">Save Flashcard</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ==================== ABOUT & GUIDE PAGE ==================== -->
+    <section id="view-about" class="page-view" aria-labelledby="aboutTitle">
+      <div class="page-header">
+        <div>
+          <h1 id="aboutTitle" class="page-title">About &amp; User Guide</h1>
+          <p class="page-subtitle">How FlashVault works, Easy / Good / Hard difficulty rules, formatting syntax, backups, and version history.</p>
+        </div>
+      </div>
+
+      <div class="uniform-grid">
+        <div class="panel">
+          <h2 style="margin:0 0 0.6rem; font-size:1.08rem;">About FlashVault</h2>
+          <p style="margin:0 0 0.75rem;">
+            FlashVault is a single-file, offline-capable flashcard web app built for desktop and mobile browsers (including GitHub Pages). Once loaded online, it caches itself and persists your data locally in IndexedDB until you clear browsing data.
+          </p>
+          <ul style="margin:0; padding-left:1.25rem;">
+            <li><strong>Bilingual Support:</strong> Generous line height and uniform button heights keep English and हिन्दी (Devanagari) text aligned without clipping.</li>
+            <li><strong>Daily Study Streak &amp; Goal:</strong> Track consecutive study days and your daily card target directly on the Home dashboard.</li>
+            <li><strong>Large Local Storage:</strong> Incremental IndexedDB storage supports thousands of cards and high-resolution images beyond the 5 MB localStorage limit.</li>
+            <li><strong>Zero External Dependencies:</strong> Works completely offline with built-in MathML, code blocks, and rich text formatting.</li>
+            <li><strong>Smart Back Navigation:</strong> Browser Back, mobile swipe Back, and desktop Backspace return to your previous screen.</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <h2 style="margin:0 0 0.6rem; font-size:1.08rem;">How Flashcards Work (Easy, Good &amp; Hard)</h2>
+          <p style="margin:0 0 0.65rem;">
+            In <strong>Practice</strong> mode, pick a subject, select one or more topics, and choose how many cards to study. Each card stays sized to the taller side so buttons never jump when you flip.
+          </p>
+          <ul style="margin:0; padding-left:1.25rem;">
+            <li><strong>Show Answer / Next Card:</strong> Reveal the back of the card, or skip ahead to the next card without changing its difficulty rating.</li>
+            <li><strong style="color:var(--hard);">Hard (1-Day Interval):</strong> Marks the card for frequent review, places it in the Hard focus group on Home, and automatically re-queues it within the current session when <em>Retry Hard cards</em> is enabled.</li>
+            <li><strong style="color:var(--good);">Good (3-Day Interval):</strong> Marks steady recall and schedules the next review in 3 days.</li>
+            <li><strong style="color:var(--easy);">Easy (7-Day Interval):</strong> Marks mastered cards and schedules the next review in 7 days.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="uniform-grid">
+        <div class="panel">
+          <h2 style="margin:0 0 0.6rem; font-size:1.08rem;">Keyboard Shortcuts</h2>
+          <table class="guide-table" style="margin:0;">
+            <thead>
+              <tr><th>Key / Action</th><th>What It Does</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>Space</code> / Tap Card</td><td>Flip between Front (Question) and Back (Answer)</td></tr>
+              <tr><td><code>1</code></td><td>Rate card as <strong>Hard</strong> (1-day review)</td></tr>
+              <tr><td><code>2</code></td><td>Rate card as <strong>Good</strong> (3-day review)</td></tr>
+              <tr><td><code>3</code></td><td>Rate card as <strong>Easy</strong> (7-day review)</td></tr>
+              <tr><td><code>Backspace</code> / Back</td><td>Return to the previous in-app view</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel">
+          <h2 style="margin:0 0 0.6rem; font-size:1.08rem;">CSV &amp; JSON Import, Export &amp; Tags</h2>
+          <p style="margin:0 0 0.6rem;">Manage large decks easily from the <strong>Cards Bank</strong> page:</p>
+          <ul style="margin:0; padding-left:1.25rem;">
+            <li><strong>CSV Header:</strong> <code>subject,topic,subtopic,front,back,tags</code> (UTF-8 for हिन्दी; wrap commas/newlines in quotes <code>"..."</code>; separate tags with <code>;</code>).</li>
+            <li><strong>JSON &amp; Export:</strong> Import JSON arrays or export filtered/all cards to plain CSV (with UTF-8 BOM) or JSON anytime.</li>
+            <li><strong>Tag Filtering &amp; Duplicate Protection:</strong> Filter by <code>#tags</code> in Bank &amp; Practice, and automatically skip duplicate cards on import or warn when adding duplicates.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 style="margin:0 0 0.6rem; font-size:1.08rem;">Rich Text, Maths &amp; Code Formatting Guide</h2>
+        <table class="guide-table" style="margin:0;">
+          <thead>
+            <tr><th>Feature</th><th>Syntax</th><th>Example Output</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Bold / Italic / Underline</td><td><code>**text**</code>, <code>*text*</code>, <code>__text__</code></td><td><strong>Bold</strong>, <em>Italic</em>, <u>Underline</u></td></tr>
+            <tr><td>Highlight</td><td><code>==important==</code></td><td><mark>important</mark></td></tr>
+            <tr><td>Inline Math</td><td><code>$a^2 + b^2 = c^2$</code></td><td>Renders clean native MathML inline</td></tr>
+            <tr><td>Display Math</td><td><code>$$rac{-b \pm \sqrt{b^2-4ac}}{2a}$$</code></td><td>Centered stacked fractions &amp; roots</td></tr>
+            <tr><td>Inline &amp; Block Code</td><td><code>`print("hi")`</code> or <code>```python ... ```</code></td><td>Monospace styled code block</td></tr>
+            <tr><td>Lists &amp; Quotes</td><td>Start lines with <code>- </code>, <code>1. </code>, or <code>&gt; </code></td><td>Formatted lists and callout quotes</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="uniform-grid">
+        <div class="panel">
+          <h2 style="margin:0 0 0.6rem; font-size:1.08rem;">Encrypted Backup &amp; Offline Persistence</h2>
+          <ul style="margin:0; padding-left:1.25rem;">
+            <li><strong>Encrypted Backup:</strong> Uses Web Crypto API (<code>PBKDF2</code> + <code>AES-GCM 256-bit</code>) to lock your cards, images, and Easy/Good/Hard progress into a passphrase-protected <code>.fvault.json</code> file.</li>
+            <li><strong>Restore Options:</strong> Merge a backup with your current bank or replace the entire bank cleanly.</li>
+            <li><strong>Offline Persistence &amp; Service Worker:</strong> Requests persistent browser storage (<code>navigator.storage.persist()</code>), caches the app shell, and registers companion <code>sw.js</code> (place <code>sw.js</code> next to <code>index.html</code> on GitHub Pages) for full offline reloads until browsing data is cleared.</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <h2 style="margin:0 0 0.6rem; font-size:1.08rem;">Version History</h2>
+          <ul style="margin:0; padding-left:1.25rem;">
+            <li><strong>v1.0.0 (2026-11-21):</strong> Complete release featuring the Cosmic Orange light/dark theme, browser tab SVG logo, 4-section workspace (Home, Practice, Cards Bank, About &amp; Guide), Daily Study Streak &amp; Goal counter, focused Practice mode with 3D flip animation, auto-matched Front/Back card height, subject &amp; progress bar, Easy/Good/Hard spaced-repetition tracking with in-session Hard card retry, copy-protected Home &amp; Practice views, outline-only Cards Bank with clickable bottom tags, tag filtering, duplicate protection, plain CSV/JSON export &amp; bulk import, English &amp; हिन्दी typography, offline MathML, code blocks, image attachments, high-capacity IndexedDB storage, companion Service Worker (<code>sw.js</code>) for full offline reloads, and AES-GCM encrypted backup/restore.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== MODALS ==================== -->
+  <!-- Bulk Import Modal -->
+  <div id="importModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="importModalTitle">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="importModalTitle" class="modal-title">Bulk Import Cards (CSV / JSON)</h3>
+        <button type="button" class="btn btn-sm" data-close-modal="importModal">Close</button>
+      </div>
+      <div class="chip-group" style="margin-bottom:0.85rem;">
+        <button type="button" class="topic-chip selected" id="tabImportCsv">CSV Format</button>
+        <button type="button" class="topic-chip" id="tabImportJson">JSON Format</button>
+        <button type="button" class="btn btn-sm" id="downloadSampleCsvBtn">Sample CSV</button>
+        <button type="button" class="btn btn-sm" id="downloadSampleJsonBtn">Sample JSON</button>
+      </div>
+      <div id="importGuideBox" class="preview-box" style="margin-bottom:0.85rem; font-size:0.86rem;"></div>
+      <div class="form-group">
+        <label class="form-label" for="importFileInput">Upload File (.csv or .json)</label>
+        <input type="file" id="importFileInput" accept=".csv,.json,.txt" class="input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="importTextArea">Or Paste Data Directly</label>
+        <textarea id="importTextArea" class="textarea" placeholder="Paste CSV rows or JSON array here..."></textarea>
+      </div>
+      <div class="toolbar-row" style="justify-content:space-between; flex-wrap:wrap;">
+        <label style="display:inline-flex; align-items:center; gap:0.45rem; cursor:pointer; min-height:36px; font-size:0.88rem;">
+          <input type="checkbox" id="importSkipDuplicatesChk" class="checkbox-input" checked />
+          <span>Skip duplicate cards (same subject, topic &amp; front)</span>
+        </label>
+        <div class="toolbar-row">
+          <button type="button" class="btn" data-close-modal="importModal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="runImportBtn">Import Cards</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plain Export Modal -->
+  <div id="exportModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="exportModalTitle">
+    <div class="modal-card" style="max-width:480px;">
+      <div class="modal-header">
+        <h3 id="exportModalTitle" class="modal-title">Export Cards (CSV / JSON)</h3>
+        <button type="button" class="btn btn-sm" data-close-modal="exportModal">Close</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="exportScopeSelect">Cards to Export</label>
+        <select id="exportScopeSelect" class="select">
+          <option value="filtered">Currently Filtered Cards</option>
+          <option value="all">All Cards in Bank</option>
+        </select>
+      </div>
+      <p class="form-hint" style="margin-bottom:1rem;">CSV includes UTF-8 BOM so English and हिन्दी characters open cleanly in Excel and Google Sheets.</p>
+      <div class="toolbar-row" style="justify-content:flex-end;">
+        <button type="button" class="btn" data-close-modal="exportModal">Cancel</button>
+        <button type="button" class="btn" id="exportCsvBtn">Download CSV</button>
+        <button type="button" class="btn btn-primary" id="exportJsonBtn">Download JSON</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Encrypted Backup Modal -->
+  <div id="backupModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="backupModalTitle">
+    <div class="modal-card" style="max-width:480px;">
+      <div class="modal-header">
+        <h3 id="backupModalTitle" class="modal-title">Create Encrypted Backup</h3>
+        <button type="button" class="btn btn-sm" data-close-modal="backupModal">Close</button>
+      </div>
+      <p class="page-subtitle" style="margin-bottom:0.85rem;">Protect your cards, images, and practice progress with a passphrase using AES-GCM encryption.</p>
+      <div class="form-group">
+        <label class="form-label" for="backupPassInput">Passphrase (min 4 characters)</label>
+        <input type="password" id="backupPassInput" class="input" placeholder="Enter a strong passphrase..." />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="backupPassConfirmInput">Confirm Passphrase</label>
+        <input type="password" id="backupPassConfirmInput" class="input" placeholder="Re-enter passphrase..." />
+      </div>
+      <div class="toolbar-row" style="justify-content:flex-end;">
+        <button type="button" class="btn" data-close-modal="backupModal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="confirmBackupBtn">Download Encrypted Backup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Restore Modal -->
+  <div id="restoreModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="restoreModalTitle">
+    <div class="modal-card" style="max-width:500px;">
+      <div class="modal-header">
+        <h3 id="restoreModalTitle" class="modal-title">Restore Encrypted Backup</h3>
+        <button type="button" class="btn btn-sm" data-close-modal="restoreModal">Close</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="restoreFileInput">Select Backup File (.fvault.json / .json)</label>
+        <input type="file" id="restoreFileInput" accept=".json,.fvault.json" class="input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="restorePassInput">Passphrase</label>
+        <input type="password" id="restorePassInput" class="input" placeholder="Enter backup passphrase..." />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="restoreModeSelect">Restore Mode</label>
+        <select id="restoreModeSelect" class="select">
+          <option value="merge">Merge with existing cards (keep current + add/update)</option>
+          <option value="replace">Replace entire bank with backup</option>
+        </select>
+      </div>
+      <div class="toolbar-row" style="justify-content:flex-end;">
+        <button type="button" class="btn" data-close-modal="restoreModal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="confirmRestoreBtn">Decrypt &amp; Restore</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Action Modal (replaces native confirm()) -->
+  <div id="confirmModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+    <div class="modal-card" style="max-width:440px;">
+      <div class="modal-header">
+        <h3 id="confirmModalTitle" class="modal-title">Confirm Action</h3>
+        <button type="button" class="btn btn-sm" data-close-modal="confirmModal">Close</button>
+      </div>
+      <p id="confirmModalMsg" style="margin:0 0 1rem;"></p>
+      <div class="toolbar-row" style="justify-content:flex-end;">
+        <button type="button" class="btn" data-close-modal="confirmModal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmModalOkBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastWrap" class="toast-wrap" aria-live="polite"></div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      /* ==================== STATE & STORAGE ==================== */
+      const DB_NAME = 'flashvault_db_v1';
+      const STORE_NAME = 'cards';
+      const LS_FALLBACK_KEY = 'flashvault_cards_fallback';
+      const LS_STATS_KEY = 'flashvault_stats';
+      const LS_THEME_KEY = 'flashvault_theme';
+
+      let db = null;
+      let cards = [];
+      let appStats = { totalSessions: 0, totalReviews: 0, dailyGoal: 20, todayDate: '', todayCount: 0, streak: 0, lastStudyDate: '' };
+      let currentView = 'home';
+      let homeDiffTab = 'hard';
+      let selectedCardIds = new Set();
+      let collapsedSubjects = new Set();
+      let collapsedTopics = new Set();
+      let allCollapsed = false;
+      let frontImageData = '';
+      let backImageData = '';
+      let importFormat = 'csv';
+      let pendingConfirmCallback = null;
+
+      // Practice session state
+      let session = {
+        active: false,
+        queue: [],
+        index: 0,
+        flipped: false,
+        counts: { easy: 0, good: 0, hard: 0 },
+        hardIds: []
+      };
+
+      const SAMPLE_CARDS = [
+        {
+          id: 'sample-phy-1',
+          subject: 'Physics',
+          topic: 'Optics',
+          subtopic: 'Refraction',
+          front: 'State **Snell\'s Law** of refraction.',
+          back: 'The ratio of the sine of the angle of incidence to the sine of the angle of refraction is constant:\n\n$$n_1 \\sin(\\theta_1) = n_2 \\sin(\\theta_2)$$\n\n- $n_1, n_2$: refractive indices of media',
+          tags: ['optics', 'formula'],
+          frontImage: '',
+          backImage: '',
+          difficulty: 'new',
+          reviewCount: 0,
+          nextReviewAt: 0,
+          createdAt: Date.now() - 50000,
+          updatedAt: Date.now() - 50000
+        },
+        {
+          id: 'sample-math-1',
+          subject: 'Mathematics',
+          topic: 'Algebra',
+          subtopic: 'Quadratic Equations',
+          front: 'What is the **Quadratic Formula** for $ax^2 + bx + c = 0$?',
+          back: '$$x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$$\n\nDiscriminant $\\Delta = b^2 - 4ac$ determines the nature of roots.',
+          tags: ['algebra', 'roots'],
+          frontImage: '',
+          backImage: '',
+          difficulty: 'new',
+          reviewCount: 0,
+          nextReviewAt: 0,
+          createdAt: Date.now() - 40000,
+          updatedAt: Date.now() - 40000
+        },
+        {
+          id: 'sample-cs-1',
+          subject: 'Computer Science',
+          topic: 'Algorithms',
+          subtopic: 'Binary Search',
+          front: 'Write a clean **Binary Search** function in Python and state its time complexity.',
+          back: 'Time complexity: ==$O(\\log n)$==\n\n```python\ndef binary_search(arr, target):\n    lo, hi = 0, len(arr) - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if arr[mid] == target:\n            return mid\n        elif arr[mid] < target:\n            lo = mid + 1\n        else:\n            hi = mid - 1\n    return -1\n```',
+          tags: ['python', 'dsa'],
+          frontImage: '',
+          backImage: '',
+          difficulty: 'new',
+          reviewCount: 0,
+          nextReviewAt: 0,
+          createdAt: Date.now() - 30000,
+          updatedAt: Date.now() - 30000
+        },
+        {
+          id: 'sample-hi-1',
+          subject: 'हिन्दी व्याकरण',
+          topic: 'संधि',
+          subtopic: 'स्वर संधि',
+          front: '**दीर्घ स्वर संधि** की परिभाषा और एक उदाहरण लिखिए।',
+          back: 'जब दो सवर्ण (समान) ह्रस्व या दीर्घ स्वर आपस में मिलते हैं, तो वे मिलकर **दीर्घ स्वर** बन जाते हैं।\n\n- उदाहरण: `विद्या + आलय = विद्यालय` ($आ + आ = आ$)\n- उदाहरण: `गिरि + ईश = गिरीश` ($इ + ई = ई$)',
+          tags: ['हिन्दी', 'व्याकरण'],
+          frontImage: '',
+          backImage: '',
+          difficulty: 'new',
+          reviewCount: 0,
+          nextReviewAt: 0,
+          createdAt: Date.now() - 20000,
+          updatedAt: Date.now() - 20000
+        }
+      ];
+
+      function safeGetLS(key, fallback) {
+        try {
+          const val = localStorage.getItem(key);
+          return val !== null ? val : fallback;
+        } catch (e) {
+          return fallback;
+        }
+      }
+
+      function safeSetLS(key, value) {
+        try {
+          localStorage.setItem(key, value);
+        } catch (e) {
+          // ignore storage quota or sandbox restrictions
+        }
+      }
+
+      function openDatabase() {
+        return new Promise((resolve) => {
+          try {
+            if (!window.indexedDB) return resolve(null);
+            const req = indexedDB.open(DB_NAME, 1);
+            req.onupgradeneeded = function (e) {
+              const database = e.target.result;
+              if (!database.objectStoreNames.contains(STORE_NAME)) {
+                database.createObjectStore(STORE_NAME, { keyPath: 'id' });
+              }
+            };
+            req.onsuccess = function (e) {
+              resolve(e.target.result);
+            };
+            req.onerror = function () {
+              resolve(null);
+            };
+          } catch (e) {
+            resolve(null);
+          }
+        });
+      }
+
+      async function loadCards() {
+        db = await openDatabase();
+        if (db) {
+          const loaded = await new Promise((resolve) => {
+            try {
+              const tx = db.transaction(STORE_NAME, 'readonly');
+              const store = tx.objectStore(STORE_NAME);
+              const req = store.getAll();
+              req.onsuccess = () => resolve(req.result || []);
+              req.onerror = () => resolve([]);
+            } catch (e) {
+              resolve([]);
+            }
+          });
+          if (loaded.length > 0) {
+            cards = loaded;
+            return;
+          }
+        }
+        const lsRaw = safeGetLS(LS_FALLBACK_KEY, '');
+        if (lsRaw) {
+          try {
+            const parsed = JSON.parse(lsRaw);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              cards = parsed;
+              await persistAllCards();
+              return;
+            }
+          } catch (e) {}
+        }
+        cards = SAMPLE_CARDS.map((c) => Object.assign({}, c));
+        await persistAllCards();
+      }
+
+      async function persistAllCards() {
+        if (!db) {
+          safeSetLS(LS_FALLBACK_KEY, JSON.stringify(cards));
+          return;
+        }
+        try { localStorage.removeItem(LS_FALLBACK_KEY); } catch (e) {}
+        await new Promise((resolve) => {
+          try {
+            const tx = db.transaction(STORE_NAME, 'readwrite');
+            const store = tx.objectStore(STORE_NAME);
+            store.clear();
+            cards.forEach((c) => store.put(c));
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => resolve();
+          } catch (e) {
+            resolve();
+          }
+        });
+        updateStorageQuotaInfo();
+      }
+
+      async function putCardInDb(card) {
+        if (!db) {
+          safeSetLS(LS_FALLBACK_KEY, JSON.stringify(cards));
+          return;
+        }
+        await new Promise((resolve) => {
+          try {
+            const tx = db.transaction(STORE_NAME, 'readwrite');
+            tx.objectStore(STORE_NAME).put(card);
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => resolve();
+          } catch (e) { resolve(); }
+        });
+        updateStorageQuotaInfo();
+      }
+
+      async function bulkPutCardsInDb(cardList) {
+        if (!db) {
+          safeSetLS(LS_FALLBACK_KEY, JSON.stringify(cards));
+          return;
+        }
+        await new Promise((resolve) => {
+          try {
+            const tx = db.transaction(STORE_NAME, 'readwrite');
+            const store = tx.objectStore(STORE_NAME);
+            cardList.forEach((c) => store.put(c));
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => resolve();
+          } catch (e) { resolve(); }
+        });
+        updateStorageQuotaInfo();
+      }
+
+      async function deleteCardsFromDb(ids) {
+        if (!db) {
+          safeSetLS(LS_FALLBACK_KEY, JSON.stringify(cards));
+          return;
+        }
+        await new Promise((resolve) => {
+          try {
+            const tx = db.transaction(STORE_NAME, 'readwrite');
+            const store = tx.objectStore(STORE_NAME);
+            ids.forEach((id) => store.delete(id));
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => resolve();
+          } catch (e) { resolve(); }
+        });
+        updateStorageQuotaInfo();
+      }
+
+      async function updateStorageQuotaInfo() {
+        const el = document.getElementById('storageQuotaMeta');
+        if (!el) return;
+        try {
+          if (navigator.storage && navigator.storage.estimate) {
+            const est = await navigator.storage.estimate();
+            const usedMB = ((est.usage || 0) / (1024 * 1024)).toFixed(2);
+            const quotaGB = ((est.quota || 0) / (1024 * 1024 * 1024)).toFixed(2);
+            el.textContent = '• Local Storage: ' + usedMB + ' MB used of ' + quotaGB + ' GB';
+          }
+        } catch (e) {}
+      }
+
+      function getLocalDayKey(offsetDays) {
+        const d = new Date();
+        if (offsetDays) d.setDate(d.getDate() + offsetDays);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return y + '-' + m + '-' + day;
+      }
+
+      function normalizeDailyStats() {
+        const today = getLocalDayKey(0);
+        const yesterday = getLocalDayKey(-1);
+        if (appStats.todayDate !== today) {
+          appStats.todayDate = today;
+          appStats.todayCount = 0;
+        }
+        if (appStats.lastStudyDate && appStats.lastStudyDate !== today && appStats.lastStudyDate !== yesterday) {
+          appStats.streak = 0;
+        }
+      }
+
+      function recordDailyReview() {
+        normalizeDailyStats();
+        const today = getLocalDayKey(0);
+        const yesterday = getLocalDayKey(-1);
+        if (appStats.lastStudyDate !== today) {
+          if (appStats.lastStudyDate === yesterday) {
+            appStats.streak = (appStats.streak || 0) + 1;
+          } else {
+            appStats.streak = 1;
+          }
+          appStats.lastStudyDate = today;
+        }
+        appStats.todayCount = (appStats.todayCount || 0) + 1;
+      }
+
+      function loadStats() {
+        const raw = safeGetLS(LS_STATS_KEY, '');
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw);
+            appStats = {
+              totalSessions: Number(parsed.totalSessions) || 0,
+              totalReviews: Number(parsed.totalReviews) || 0,
+              dailyGoal: Math.max(1, Number(parsed.dailyGoal) || 20),
+              todayDate: String(parsed.todayDate || ''),
+              todayCount: Number(parsed.todayCount) || 0,
+              streak: Number(parsed.streak) || 0,
+              lastStudyDate: String(parsed.lastStudyDate || '')
+            };
+          } catch (e) {}
+        }
+        normalizeDailyStats();
+      }
+
+      function saveStats() {
+        safeSetLS(LS_STATS_KEY, JSON.stringify(appStats));
+      }
+
+      /* ==================== TOAST & MODAL HELPERS ==================== */
+      function showToast(msg) {
+        const wrap = document.getElementById('toastWrap');
+        const el = document.createElement('div');
+        el.className = 'toast';
+        el.textContent = msg;
+        wrap.appendChild(el);
+        setTimeout(() => {
+          el.remove();
+        }, 3200);
+      }
+
+      function openModal(id) {
+        document.getElementById(id).classList.add('open');
+      }
+
+      function closeModal(id) {
+        document.getElementById(id).classList.remove('open');
+      }
+
+      function askConfirm(title, message, okLabel, onOk) {
+        document.getElementById('confirmModalTitle').textContent = title;
+        document.getElementById('confirmModalMsg').textContent = message;
+        document.getElementById('confirmModalOkBtn').textContent = okLabel || 'Confirm';
+        pendingConfirmCallback = onOk;
+        openModal('confirmModal');
+      }
+
+      /* ==================== RICH TEXT, CODE & OFFLINE LATEX MATH RENDERER ==================== */
+      function escapeHtml(str) {
+        return String(str || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      const LATEX_SYMBOLS = {
+        '\\alpha': 'α', '\\beta': 'β', '\\gamma': 'γ', '\\delta': 'δ', '\\epsilon': 'ε',
+        '\\zeta': 'ζ', '\\eta': 'η', '\\theta': 'θ', '\\iota': 'ι', '\\kappa': 'κ',
+        '\\lambda': 'λ', '\\mu': 'μ', '\\nu': 'ν', '\\xi': 'ξ', '\\pi': 'π',
+        '\\rho': 'ρ', '\\sigma': 'σ', '\\tau': 'τ', '\\upsilon': 'υ', '\\phi': 'φ',
+        '\\chi': 'χ', '\\psi': 'ψ', '\\omega': 'ω',
+        '\\Alpha': 'Α', '\\Beta': 'Β', '\\Gamma': 'Γ', '\\Delta': 'Δ', '\\Theta': 'Θ',
+        '\\Lambda': 'Λ', '\\Pi': 'Π', '\\Sigma': 'Σ', '\\Phi': 'Φ', '\\Omega': 'Ω',
+        '\\infty': '∞', '\\pm': '±', '\\mp': '∓', '\\times': '×', '\\div': '÷',
+        '\\cdot': '·', '\\leq': '≤', '\\le': '≤', '\\geq': '≥', '\\ge': '≥',
+        '\\neq': '≠', '\\ne': '≠', '\\approx': '≈', '\\equiv': '≡', '\\propto': '∝',
+        '\\rightarrow': '→', '\\to': '→', '\\leftarrow': '←', '\\Rightarrow': '⇒',
+        '\\Leftrightarrow': '⇔', '\\in': '∈', '\\notin': '∉', '\\subset': '⊂',
+        '\\subseteq': '⊆', '\\cup': '∪', '\\cap': '∩', '\\forall': '∀', '\\exists': '∃',
+        '\\partial': '∂', '\\nabla': '∇', '\\sum': '∑', '\\prod': '∏', '\\int': '∫',
+        '\\degree': '°', '\\circ': '∘', '\\angle': '∠', '\\perp': '⊥', '\\parallel': '∥'
+      };
+
+      function readBraceGroup(str, startIdx) {
+        if (str[startIdx] !== '{') return null;
+        let depth = 0;
+        let i = startIdx;
+        while (i < str.length) {
+          if (str[i] === '{') depth++;
+          else if (str[i] === '}') {
+            depth--;
+            if (depth === 0) {
+              return { content: str.slice(startIdx + 1, i), nextIdx: i + 1 };
+            }
+          }
+          i++;
+        }
+        return { content: str.slice(startIdx + 1), nextIdx: str.length };
+      }
+
+      function latexToMathMLInner(tex) {
+        let out = '';
+        let i = 0;
+        const s = tex.trim();
+        while (i < s.length) {
+          const ch = s[i];
+          if (ch === ' ' || ch === '\n' || ch === '\t') {
+            i++;
+            continue;
+          }
+          if (ch === '{') {
+            const grp = readBraceGroup(s, i);
+            out += '<mrow>' + latexToMathMLInner(grp.content) + '</mrow>';
+            i = grp.nextIdx;
+            continue;
+          }
+          if (ch === '\\') {
+            const m = s.slice(i).match(/^\\[a-zA-Z]+/);
+            if (m) {
+              const cmd = m[0];
+              i += cmd.length;
+              if (cmd === '\\frac') {
+                while (s[i] === ' ') i++;
+                const num = s[i] === '{' ? readBraceGroup(s, i) : { content: s[i] || '', nextIdx: i + 1 };
+                i = num.nextIdx;
+                while (s[i] === ' ') i++;
+                const den = s[i] === '{' ? readBraceGroup(s, i) : { content: s[i] || '', nextIdx: i + 1 };
+                i = den.nextIdx;
+                out += '<mfrac><mrow>' + latexToMathMLInner(num.content) + '</mrow><mrow>' + latexToMathMLInner(den.content) + '</mrow></mfrac>';
+                continue;
+              }
+              if (cmd === '\\sqrt') {
+                while (s[i] === ' ') i++;
+                const body = s[i] === '{' ? readBraceGroup(s, i) : { content: s[i] || '', nextIdx: i + 1 };
+                i = body.nextIdx;
+                out += '<msqrt><mrow>' + latexToMathMLInner(body.content) + '</mrow></msqrt>';
+                continue;
+              }
+              if (cmd === '\\text' || cmd === '\\mathrm' || cmd === '\\mathbf') {
+                while (s[i] === ' ') i++;
+                const body = s[i] === '{' ? readBraceGroup(s, i) : { content: '', nextIdx: i };
+                i = body.nextIdx;
+                out += '<mtext>' + escapeHtml(body.content) + '</mtext>';
+                continue;
+              }
+              if (cmd === '\\sin' || cmd === '\\cos' || cmd === '\\tan' || cmd === '\\log' || cmd === '\\ln' || cmd === '\\lim') {
+                out += '<mi>' + cmd.slice(1) + '</mi>';
+                continue;
+              }
+              if (LATEX_SYMBOLS[cmd]) {
+                out += '<mo>' + LATEX_SYMBOLS[cmd] + '</mo>';
+                continue;
+              }
+              out += '<mi>' + escapeHtml(cmd.slice(1)) + '</mi>';
+              continue;
+            }
+          }
+          if (ch === '^' || ch === '_') {
+            const tag = ch === '^' ? 'msup' : 'msub';
+            i++;
+            while (s[i] === ' ') i++;
+            const arg = s[i] === '{' ? readBraceGroup(s, i) : { content: s[i] || '', nextIdx: i + 1 };
+            i = arg.nextIdx;
+            const prevMatch = out.match(/(<m[a-z]+>[\s\S]*<\/m[a-z]+>)$/);
+            const base = prevMatch ? prevMatch[1] : '<mi></mi>';
+            if (prevMatch) out = out.slice(0, -base.length);
+            out += '<' + tag + '>' + base + '<mrow>' + latexToMathMLInner(arg.content) + '</mrow></' + tag + '>';
+            continue;
+          }
+          if (/[0-9]/.test(ch)) {
+            let num = ch;
+            i++;
+            while (i < s.length && /[0-9.]/.test(s[i])) { num += s[i++]; }
+            out += '<mn>' + num + '</mn>';
+            continue;
+          }
+          if (/[a-zA-Z]/.test(ch)) {
+            out += '<mi>' + ch + '</mi>';
+            i++;
+            continue;
+          }
+          if ('+-=<>(),[]|/!'.includes(ch)) {
+            out += '<mo>' + escapeHtml(ch) + '</mo>';
+            i++;
+            continue;
+          }
+          out += '<mtext>' + escapeHtml(ch) + '</mtext>';
+          i++;
+        }
+        return out;
+      }
+
+      function renderMath(tex, displayMode) {
+        const inner = latexToMathMLInner(tex);
+        const cls = displayMode ? 'math-display' : 'math-inline';
+        const disp = displayMode ? ' display="block"' : '';
+        return '<span class="' + cls + '"><math xmlns="http://www.w3.org/1998/Math/MathML"' + disp + '>' + inner + '</math></span>';
+      }
+
+      function renderRichContent(raw) {
+        if (!raw) return '';
+        let text = String(raw);
+        const tokens = [];
+        function stash(html) {
+          const id = '\u0000TOK' + tokens.length + '\u0000';
+          tokens.push(html);
+          return id;
+        }
+
+        // 1. Fenced code blocks
+        text = text.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (_, lang, code) => {
+          return stash('<pre class="code-block"><code>' + escapeHtml(code.replace(/\n$/, '')) + '</code></pre>');
+        });
+
+        // 2. Display math $$...$$
+        text = text.replace(/\$\$([\s\S]+?)\$\$/g, (_, tex) => {
+          return stash(renderMath(tex, true));
+        });
+
+        // 3. Inline code `...`
+        text = text.replace(/`([^`\n]+)`/g, (_, code) => {
+          return stash('<code class="inline-code">' + escapeHtml(code) + '</code>');
+        });
+
+        // 4. Inline math $...$
+        text = text.replace(/\$([^\$\n]+?)\$/g, (_, tex) => {
+          return stash(renderMath(tex, false));
+        });
+
+        // Escape remaining HTML
+        text = escapeHtml(text);
+
+        // Inline formatting
+        text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+        text = text.replace(/__(.+?)__/g, '<u>$1</u>');
+        text = text.replace(/==(.+?)==/g, '<mark>$1</mark>');
+
+        // Line-by-line block parsing
+        const lines = text.split(/\r?\n/);
+        let html = '';
+        let inUl = false;
+        let inOl = false;
+
+        function closeLists() {
+          if (inUl) { html += '</ul>'; inUl = false; }
+          if (inOl) { html += '</ol>'; inOl = false; }
+        }
+
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          if (/^\s*[-*]\s+(.+)$/.test(line)) {
+            if (inOl) { html += '</ol>'; inOl = false; }
+            if (!inUl) { html += '<ul>'; inUl = true; }
+            html += '<li>' + line.replace(/^\s*[-*]\s+/, '') + '</li>';
+          } else if (/^\s*\d+\.\s+(.+)$/.test(line)) {
+            if (inUl) { html += '</ul>'; inUl = false; }
+            if (!inOl) { html += '<ol>'; inOl = true; }
+            html += '<li>' + line.replace(/^\s*\d+\.\s+/, '') + '</li>';
+          } else if (/^\s*&gt;\s?(.+)$/.test(line)) {
+            closeLists();
+            html += '<blockquote>' + line.replace(/^\s*&gt;\s?/, '') + '</blockquote>';
+          } else if (line.trim() === '') {
+            closeLists();
+          } else {
+            closeLists();
+            html += '<p>' + line + '</p>';
+          }
+        }
+        closeLists();
+
+        // Restore stashed tokens
+        html = html.replace(/\u0000TOK(\d+)\u0000/g, (_, idx) => tokens[Number(idx)] || '');
+        return html;
+      }
+
+      /* ==================== NAVIGATION & BACK-BUTTON SUPPORT ==================== */
+      function switchView(viewName, pushHist) {
+        if (pushHist === undefined) pushHist = true;
+        currentView = viewName;
+        document.querySelectorAll('.page-view').forEach((sec) => {
+          sec.classList.toggle('active', sec.id === 'view-' + viewName);
+        });
+        document.querySelectorAll('.nav-btn').forEach((btn) => {
+          const target = btn.getAttribute('data-nav');
+          btn.classList.toggle('active', target === viewName || (viewName === 'editor' && target === 'bank'));
+        });
+
+        if (pushHist) {
+          try {
+            history.pushState({ view: viewName }, '', '#' + viewName);
+          } catch (e) {}
+        }
+
+        if (viewName === 'home') renderHome();
+        else if (viewName === 'practice') renderPracticeSetup();
+        else if (viewName === 'bank') renderBank();
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      window.addEventListener('popstate', function (e) {
+        if (e.state && e.state.view) {
+          switchView(e.state.view, false);
+        } else {
+          switchView('home', false);
+        }
+      });
+
+      document.addEventListener('keydown', function (e) {
+        const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+        const isTyping = tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable);
+
+        if (e.key === 'Backspace' && !isTyping) {
+          if (currentView !== 'home') {
+            e.preventDefault();
+            history.back();
+          }
+          return;
+        }
+
+        if (currentView === 'practice' && session.active && !isTyping) {
+          if (e.code === 'Space') {
+            e.preventDefault();
+            flipCurrentCard();
+          } else if (session.flipped && e.key === '1') {
+            rateCurrentCard('hard');
+          } else if (session.flipped && e.key === '2') {
+            rateCurrentCard('good');
+          } else if (session.flipped && e.key === '3') {
+            rateCurrentCard('easy');
+          }
+        }
+      });
+
+      /* ==================== HOME PAGE ==================== */
+      function renderHome() {
+        const total = cards.length;
+        const easyCards = cards.filter((c) => c.difficulty === 'easy');
+        const goodCards = cards.filter((c) => c.difficulty === 'good');
+        const hardCards = cards.filter((c) => c.difficulty === 'hard');
+        const newCards = cards.filter((c) => !c.difficulty || c.difficulty === 'new');
+        const subjects = Array.from(new Set(cards.map((c) => c.subject)));
+        const now = Date.now();
+        const dueCards = cards.filter((c) => c.nextReviewAt && c.nextReviewAt <= now);
+
+        document.getElementById('statTotal').textContent = total;
+        document.getElementById('statSubjectsMeta').textContent = subjects.length + (subjects.length === 1 ? ' subject' : ' subjects');
+        document.getElementById('statEasy').textContent = easyCards.length;
+        document.getElementById('statGood').textContent = goodCards.length;
+        document.getElementById('statHard').textContent = hardCards.length;
+
+        const pct = (n) => total > 0 ? Math.round((n / total) * 100) : 0;
+        document.getElementById('statEasyPct').textContent = pct(easyCards.length) + '% of bank';
+        document.getElementById('statGoodPct').textContent = pct(goodCards.length) + '% of bank';
+        document.getElementById('statHardPct').textContent = pct(hardCards.length) + '% of bank';
+        document.getElementById('statUnpracticedBadge').textContent = newCards.length + ' Unpracticed';
+
+        document.getElementById('barEasy').style.width = pct(easyCards.length) + '%';
+        document.getElementById('barGood').style.width = pct(goodCards.length) + '%';
+        document.getElementById('barHard').style.width = pct(hardCards.length) + '%';
+        document.getElementById('barNew').style.width = Math.max(0, 100 - pct(easyCards.length) - pct(goodCards.length) - pct(hardCards.length)) + '%';
+
+        const practicedCount = easyCards.length + goodCards.length + hardCards.length;
+        document.getElementById('masterySummaryText').textContent =
+          practicedCount > 0
+            ? practicedCount + ' of ' + total + ' cards practiced (' + pct(easyCards.length) + '% mastered).'
+            : 'No cards practiced yet. Start a session to track Easy, Good, and Hard progress.';
+
+        document.getElementById('totalReviewsMeta').textContent = 'Total card reviews logged: ' + appStats.totalReviews + ' (' + appStats.totalSessions + ' sessions)';
+        document.getElementById('dueCountMeta').textContent = 'Due for review now: ' + dueCards.length;
+
+        normalizeDailyStats();
+        const goal = Math.max(1, appStats.dailyGoal || 20);
+        const todayCount = appStats.todayCount || 0;
+        const goalPct = Math.min(100, Math.round((todayCount / goal) * 100));
+        document.getElementById('dailyGoalInput').value = goal;
+        document.getElementById('dailyGoalBar').style.width = goalPct + '%';
+        document.getElementById('dailyGoalSubtitle').textContent =
+          todayCount + ' of ' + goal + ' cards reviewed today' + (todayCount >= goal ? ' — Daily goal reached!' : '');
+        const streakVal = appStats.streak || 0;
+        document.getElementById('studyStreakBadge').textContent = 'Streak: ' + streakVal + (streakVal === 1 ? ' day' : ' days');
+
+        renderHomeDifficultyList();
+        renderHomeSubjectOverview();
+      }
+
+      function renderHomeDifficultyList() {
+        const container = document.getElementById('homeDifficultyList');
+        const list = cards.filter((c) => {
+          const d = c.difficulty || 'new';
+          return d === homeDiffTab;
+        });
+
+        if (list.length === 0) {
+          container.innerHTML = '<div class="empty-state" style="padding:1.25rem 0.5rem;">No cards in the <strong>' + escapeHtml(homeDiffTab) + '</strong> category yet.</div>';
+          return;
+        }
+
+        const shown = list.slice(0, 8);
+        container.innerHTML = shown.map((c) => {
+          const badgeCls = c.difficulty === 'easy' ? 'badge-easy' : c.difficulty === 'good' ? 'badge-good' : c.difficulty === 'hard' ? 'badge-hard' : 'badge-new';
+          const label = c.difficulty === 'new' || !c.difficulty ? 'Unpracticed' : c.difficulty.toUpperCase();
+          return (
+            '<div style="padding:0.6rem 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; gap:0.6rem;">' +
+              '<div style="min-width:0;">' +
+                '<div style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">' + escapeHtml(c.subject) + ' &bull; ' + escapeHtml(c.topic) + '</div>' +
+                '<div class="rich-content" style="font-size:0.92rem; margin-top:0.15rem;">' + renderRichContent(c.front) + '</div>' +
+              '</div>' +
+              '<span class="badge ' + badgeCls + '">' + label + '</span>' +
+            '</div>'
+          );
+        }).join('') + (list.length > 8 ? '<div class="form-hint" style="margin-top:0.5rem;">Showing 8 of ' + list.length + ' cards.</div>' : '');
+      }
+
+      function renderHomeSubjectOverview() {
+        const container = document.getElementById('homeSubjectOverview');
+        if (cards.length === 0) {
+          container.innerHTML = '<div class="empty-state">No cards yet. Add a card or import a CSV/JSON file.</div>';
+          return;
+        }
+        const bySub = {};
+        cards.forEach((c) => {
+          if (!bySub[c.subject]) bySub[c.subject] = { total: 0, easy: 0, good: 0, hard: 0 };
+          bySub[c.subject].total++;
+          if (c.difficulty === 'easy') bySub[c.subject].easy++;
+          else if (c.difficulty === 'good') bySub[c.subject].good++;
+          else if (c.difficulty === 'hard') bySub[c.subject].hard++;
+        });
+
+        container.innerHTML = Object.keys(bySub).sort().map((sub) => {
+          const s = bySub[sub];
+          return (
+            '<div style="padding:0.55rem 0; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:0.75rem; flex-wrap:nowrap;">' +
+              '<div style="flex:1; min-width:0; overflow-wrap:anywhere; line-height:1.55;"><strong>' + escapeHtml(sub) + '</strong> <span class="stat-meta" style="white-space:nowrap;">(' + s.total + (s.total === 1 ? ' card' : ' cards') + ')</span></div>' +
+              '<div style="display:flex; align-items:center; gap:0.35rem; flex-wrap:nowrap; flex-shrink:0;">' +
+                '<span class="badge badge-easy">E: ' + s.easy + '</span>' +
+                '<span class="badge badge-good">G: ' + s.good + '</span>' +
+                '<span class="badge badge-hard">H: ' + s.hard + '</span>' +
+              '</div>' +
+            '</div>'
+          );
+        }).join('');
+      }
+
+      /* ==================== PRACTICE PAGE ==================== */
+      let selectedTopics = new Set();
+
+      function renderPracticeSetup() {
+        document.getElementById('practicePageHeader').style.display = 'flex';
+        document.getElementById('practiceSetupPanel').style.display = 'block';
+        document.getElementById('practiceActiveStage').style.display = 'none';
+        document.getElementById('practiceSummaryPanel').style.display = 'none';
+        session.active = false;
+
+        const subSelect = document.getElementById('practiceSubjectSelect');
+        const subjects = Array.from(new Set(cards.map((c) => c.subject))).sort();
+        const prevSub = subSelect.value;
+
+        if (subjects.length === 0) {
+          subSelect.innerHTML = '<option value="">No subjects available</option>';
+          document.getElementById('practiceTopicChips').innerHTML = '<span class="stat-meta">Add cards first to practice.</span>';
+          document.getElementById('practiceMatchingCountHint').textContent = '0 matching cards available';
+          return;
+        }
+
+        subSelect.innerHTML = subjects.map((s) => '<option value="' + escapeHtml(s) + '">' + escapeHtml(s) + '</option>').join('');
+        if (subjects.includes(prevSub)) subSelect.value = prevSub;
+
+        populateTopicChipsForSubject(subSelect.value);
+      }
+
+      function populatePracticeTagsForSubject(subject) {
+        const tagSel = document.getElementById('practiceTagFilter');
+        const prev = tagSel.value;
+        const tags = Array.from(new Set(
+          cards.filter((c) => !subject || c.subject === subject).flatMap((c) => c.tags || [])
+        )).sort();
+        tagSel.innerHTML = '<option value="all">All Tags</option>' + tags.map((t) => '<option value="' + escapeHtml(t) + '">#' + escapeHtml(t) + '</option>').join('');
+        tagSel.value = tags.includes(prev) ? prev : 'all';
+      }
+
+      function populateTopicChipsForSubject(subject) {
+        const topics = Array.from(new Set(cards.filter((c) => c.subject === subject).map((c) => c.topic))).sort();
+        selectedTopics = new Set(topics);
+        populatePracticeTagsForSubject(subject);
+        renderTopicChips(topics);
+      }
+
+      function renderTopicChips(topics) {
+        const wrap = document.getElementById('practiceTopicChips');
+        wrap.innerHTML = topics.map((t) => {
+          const sel = selectedTopics.has(t) ? ' selected' : '';
+          return '<button type="button" class="topic-chip' + sel + '" data-topic="' + escapeHtml(t) + '">' + escapeHtml(t) + '</button>';
+        }).join('');
+
+        wrap.querySelectorAll('.topic-chip').forEach((btn) => {
+          btn.addEventListener('click', function () {
+            const t = this.getAttribute('data-topic');
+            if (selectedTopics.has(t)) selectedTopics.delete(t);
+            else selectedTopics.add(t);
+            this.classList.toggle('selected', selectedTopics.has(t));
+            updatePracticeMatchCount();
+          });
+        });
+
+        updatePracticeMatchCount();
+      }
+
+      function getFilteredPracticeCards() {
+        const sub = document.getElementById('practiceSubjectSelect').value;
+        const diff = document.getElementById('practiceDifficultyFilter').value;
+        const tagFilter = document.getElementById('practiceTagFilter').value;
+        const now = Date.now();
+        return cards.filter((c) => {
+          if (sub && c.subject !== sub) return false;
+          if (!selectedTopics.has(c.topic)) return false;
+          if (tagFilter !== 'all' && !(c.tags || []).includes(tagFilter)) return false;
+          const d = c.difficulty || 'new';
+          if (diff === 'due') return d === 'new' || !c.nextReviewAt || c.nextReviewAt <= now;
+          if (diff !== 'all') return d === diff;
+          return true;
+        });
+      }
+
+      function updatePracticeMatchCount() {
+        const list = getFilteredPracticeCards();
+        document.getElementById('practiceMatchingCountHint').textContent = list.length + ' matching card' + (list.length === 1 ? '' : 's') + ' available';
+      }
+
+      function startPracticeWithCards(pool) {
+        if (!pool || pool.length === 0) {
+          showToast('No matching cards found for this selection.');
+          return;
+        }
+        const shuffle = document.getElementById('practiceShuffleChk').checked;
+        let ordered = pool.slice();
+        if (shuffle) {
+          for (let i = ordered.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            const tmp = ordered[i];
+            ordered[i] = ordered[j];
+            ordered[j] = tmp;
+          }
+        }
+        const requestedCount = Math.max(1, parseInt(document.getElementById('practiceCountInput').value, 10) || ordered.length);
+        const retryHard = document.getElementById('practiceRetryHardChk').checked;
+        session = {
+          active: true,
+          queue: ordered.slice(0, requestedCount),
+          index: 0,
+          flipped: false,
+          counts: { easy: 0, good: 0, hard: 0 },
+          hardIds: [],
+          retryHard: retryHard,
+          retryCounts: {}
+        };
+
+        document.getElementById('practicePageHeader').style.display = 'none';
+        document.getElementById('practiceSetupPanel').style.display = 'none';
+        document.getElementById('practiceSummaryPanel').style.display = 'none';
+        document.getElementById('practiceActiveStage').style.display = 'block';
+        renderActivePracticeCard();
+      }
+
+      function renderActivePracticeCard() {
+        const card = session.queue[session.index];
+        if (!card) {
+          finishPracticeSession();
+          return;
+        }
+        const total = session.queue.length;
+        document.getElementById('activeSubjectName').textContent = card.subject || '';
+        document.getElementById('sessionProgressLabel').textContent = (session.index + 1) + ' / ' + total;
+        document.getElementById('sessionProgressBar').style.width = Math.round(((session.index + 1) / total) * 100) + '%';
+        document.getElementById('flipCardBtn').textContent = session.flipped ? 'Show Question' : 'Show Answer';
+
+        let frontHtml = renderRichContent(card.front);
+        if (card.frontImage) {
+          frontHtml += '<img class="flashcard-img" src="' + escapeHtml(card.frontImage) + '" alt="Flashcard front visual" />';
+        }
+        let backHtml = renderRichContent(card.back);
+        if (card.backImage) {
+          backHtml += '<img class="flashcard-img" src="' + escapeHtml(card.backImage) + '" alt="Flashcard back visual" />';
+        }
+
+        const boxEl = document.getElementById('flashcardBox');
+        const frontEl = document.getElementById('activeCardFront');
+        const backEl = document.getElementById('activeCardBack');
+        frontEl.innerHTML = frontHtml;
+        backEl.innerHTML = backHtml;
+        if (!session.flipped && boxEl.classList.contains('is-flipped') && !session._justFlipped) {
+          boxEl.classList.add('no-transition');
+          boxEl.classList.remove('is-flipped');
+          void boxEl.offsetWidth;
+          boxEl.classList.remove('no-transition');
+        } else {
+          boxEl.classList.toggle('is-flipped', session.flipped);
+        }
+        session._justFlipped = false;
+      }
+
+      function nextPracticeCard() {
+        if (!session.active) return;
+        session.index++;
+        session.flipped = false;
+        if (session.index >= session.queue.length) {
+          finishPracticeSession();
+        } else {
+          renderActivePracticeCard();
+        }
+      }
+
+      function flipCurrentCard() {
+        if (!session.active) return;
+        session.flipped = !session.flipped;
+        session._justFlipped = true;
+        renderActivePracticeCard();
+      }
+
+      async function rateCurrentCard(rating) {
+        if (!session.active) return;
+        const card = session.queue[session.index];
+        if (!card) return;
+
+        const now = Date.now();
+        const intervals = { hard: 1, good: 3, easy: 7 };
+        const days = intervals[rating] || 3;
+
+        const idx = cards.findIndex((c) => c.id === card.id);
+        if (idx !== -1) {
+          cards[idx].difficulty = rating;
+          cards[idx].reviewCount = (cards[idx].reviewCount || 0) + 1;
+          cards[idx].lastReviewedAt = now;
+          cards[idx].nextReviewAt = now + days * 24 * 60 * 60 * 1000;
+          await putCardInDb(cards[idx]);
+        }
+
+        session.counts[rating]++;
+        if (rating === 'hard') {
+          if (!session.hardIds.includes(card.id)) {
+            session.hardIds.push(card.id);
+          }
+          if (session.retryHard) {
+            const tries = (session.retryCounts && session.retryCounts[card.id]) || 0;
+            if (tries < 3) {
+              session.retryCounts[card.id] = tries + 1;
+              session.queue.push(card);
+              showToast('Hard card queued for retry in this session.');
+            }
+          }
+        }
+        appStats.totalReviews++;
+        recordDailyReview();
+        saveStats();
+
+        session.index++;
+        session.flipped = false;
+        if (session.index >= session.queue.length) {
+          finishPracticeSession();
+        } else {
+          renderActivePracticeCard();
+        }
+      }
+
+      function finishPracticeSession() {
+        session.active = false;
+        appStats.totalSessions++;
+        saveStats();
+        document.getElementById('practicePageHeader').style.display = 'flex';
+        document.getElementById('practiceActiveStage').style.display = 'none';
+        document.getElementById('practiceSummaryPanel').style.display = 'block';
+        document.getElementById('sumEasy').textContent = session.counts.easy;
+        document.getElementById('sumGood').textContent = session.counts.good;
+        document.getElementById('sumHard').textContent = session.counts.hard;
+        const retryBtn = document.getElementById('retryHardSessionBtn');
+        retryBtn.style.display = session.hardIds.length > 0 ? 'inline-flex' : 'none';
+      }
+
+      function quickPracticeDifficulty(mode) {
+        const now = Date.now();
+        let pool = [];
+        if (mode === 'due') {
+          pool = cards.filter((c) => !c.difficulty || c.difficulty === 'new' || !c.nextReviewAt || c.nextReviewAt <= now);
+        } else {
+          pool = cards.filter((c) => c.difficulty === mode);
+        }
+        if (pool.length === 0) {
+          showToast('No cards found in "' + mode + '" right now.');
+          return;
+        }
+        switchView('practice');
+        startPracticeWithCards(pool);
+      }
+
+      /* ==================== CARDS BANK PAGE ==================== */
+      function getFilteredBankCards() {
+        const q = (document.getElementById('bankSearchInput').value || '').trim().toLowerCase();
+        const subFilter = document.getElementById('bankSubjectFilter').value;
+        const diffFilter = document.getElementById('bankDiffFilter').value;
+        const tagFilter = document.getElementById('bankTagFilter').value;
+
+        return cards.filter((c) => {
+          if (subFilter !== 'all' && c.subject !== subFilter) return false;
+          const d = c.difficulty || 'new';
+          if (diffFilter !== 'all' && d !== diffFilter) return false;
+          if (tagFilter !== 'all' && !(c.tags || []).includes(tagFilter)) return false;
+          if (!q) return true;
+          const hay = [c.subject, c.topic, c.subtopic, c.front, c.back, (c.tags || []).join(' ')].join(' ').toLowerCase();
+          return hay.includes(q);
+        });
+      }
+
+      function updateBulkDeleteButton() {
+        const btn = document.getElementById('bulkDeleteBtn');
+        btn.textContent = 'Bulk Delete (' + selectedCardIds.size + ')';
+        btn.disabled = selectedCardIds.size === 0;
+      }
+
+      function renderBank() {
+        const subSelect = document.getElementById('bankSubjectFilter');
+        const prevSub = subSelect.value;
+        const subjects = Array.from(new Set(cards.map((c) => c.subject))).sort();
+        subSelect.innerHTML = '<option value="all">All Subjects</option>' + subjects.map((s) => '<option value="' + escapeHtml(s) + '">' + escapeHtml(s) + '</option>').join('');
+        if (subjects.includes(prevSub)) subSelect.value = prevSub;
+
+        const tagSelect = document.getElementById('bankTagFilter');
+        const prevTag = tagSelect.value;
+        const allTags = Array.from(new Set(cards.flatMap((c) => c.tags || []))).sort();
+        tagSelect.innerHTML = '<option value="all">All Tags</option>' + allTags.map((t) => '<option value="' + escapeHtml(t) + '">#' + escapeHtml(t) + '</option>').join('');
+        if (allTags.includes(prevTag)) tagSelect.value = prevTag;
+
+        const filtered = getFilteredBankCards();
+        document.getElementById('bankCountSummary').textContent = 'Showing ' + filtered.length + ' of ' + cards.length + ' cards';
+        updateStorageQuotaInfo();
+        updateBulkDeleteButton();
+
+        const container = document.getElementById('bankGroupsContainer');
+        if (filtered.length === 0) {
+          container.innerHTML = '<div class="panel empty-state">No matching flashcards found. Try clearing filters or add a new card.</div>';
+          return;
+        }
+
+        // Group by Subject -> Topic
+        const tree = {};
+        filtered.forEach((c) => {
+          if (!tree[c.subject]) tree[c.subject] = {};
+          if (!tree[c.subject][c.topic]) tree[c.subject][c.topic] = [];
+          tree[c.subject][c.topic].push(c);
+        });
+
+        let html = '';
+        Object.keys(tree).sort().forEach((sub) => {
+          const topicsObj = tree[sub];
+          const subCount = Object.values(topicsObj).reduce((acc, arr) => acc + arr.length, 0);
+          const subCollapsed = collapsedSubjects.has(sub);
+
+          html += '<div class="subject-group">';
+          html += '<button type="button" class="subject-header" data-toggle-subject="' + escapeHtml(sub) + '">';
+          html += '<span>' + escapeHtml(sub) + ' <span class="badge badge-neutral">' + subCount + '</span></span>';
+          html += '<span>' + (subCollapsed ? 'Expand +' : 'Collapse &minus;') + '</span>';
+          html += '</button>';
+
+          if (!subCollapsed) {
+            Object.keys(topicsObj).sort().forEach((top) => {
+              const list = topicsObj[top];
+              const topKey = sub + '::' + top;
+              const topCollapsed = collapsedTopics.has(topKey);
+
+              html += '<div class="topic-group">';
+              html += '<button type="button" class="topic-header" data-toggle-topic="' + escapeHtml(topKey) + '">';
+              html += '<span>' + escapeHtml(top) + ' <span class="badge badge-neutral">' + list.length + '</span></span>';
+              html += '<span style="font-size:0.82rem; color:var(--text-muted);">' + (topCollapsed ? 'Show' : 'Hide') + '</span>';
+              html += '</button>';
+
+              if (!topCollapsed) {
+                html += '<div class="topic-cards">';
+                list.forEach((c) => {
+                  const checked = selectedCardIds.has(c.id) ? ' checked' : '';
+                  const diffCls = c.difficulty === 'easy' ? 'badge-easy' : c.difficulty === 'good' ? 'badge-good' : c.difficulty === 'hard' ? 'badge-hard' : 'badge-new';
+                  const diffLbl = (!c.difficulty || c.difficulty === 'new') ? 'Unpracticed' : c.difficulty.toUpperCase();
+                  const tagsHtml = (c.tags || []).map((tg) => '<button type="button" class="badge badge-neutral bank-tag-pill" data-tag="' + escapeHtml(tg) + '" style="cursor:pointer;">#' + escapeHtml(tg) + '</button>').join('');
+                  const subtopicHtml = c.subtopic ? '<span class="badge badge-neutral">' + escapeHtml(c.subtopic) + '</span>' : '';
+
+                  html += '<div class="bank-card">';
+                  html += '<div class="bank-card-top">';
+                  html += '<div class="bank-card-meta">';
+                  html += '<input type="checkbox" class="checkbox-input card-select-chk" data-id="' + escapeHtml(c.id) + '"' + checked + ' aria-label="Select card" />';
+                  html += '<span class="badge ' + diffCls + '">' + diffLbl + '</span>';
+                  html += subtopicHtml;
+                  html += '</div>';
+                  html += '<div class="bank-card-actions">';
+                  html += '<button type="button" class="btn btn-sm edit-card-btn" data-id="' + escapeHtml(c.id) + '">Edit</button>';
+                  html += '<button type="button" class="btn btn-sm btn-danger delete-card-btn" data-id="' + escapeHtml(c.id) + '">Delete</button>';
+                  html += '</div></div>';
+
+                  html += '<div class="bank-card-body">';
+                  html += '<div class="card-side-box rich-content"><div class="card-side-label">Front</div>' + renderRichContent(c.front) + (c.frontImage ? '<img class="flashcard-img" src="' + escapeHtml(c.frontImage) + '" alt="Front image" />' : '') + '</div>';
+                  html += '<div class="card-side-box rich-content"><div class="card-side-label">Back</div>' + renderRichContent(c.back) + (c.backImage ? '<img class="flashcard-img" src="' + escapeHtml(c.backImage) + '" alt="Back image" />' : '') + '</div>';
+                  html += '</div>';
+                  if (tagsHtml) {
+                    html += '<div class="bank-card-tags">' + tagsHtml + '</div>';
+                  }
+                  html += '</div>';
+                });
+                html += '</div>';
+              }
+              html += '</div>';
+            });
+          }
+          html += '</div>';
+        });
+
+        container.innerHTML = html;
+
+        // Bind dynamic listeners
+        container.querySelectorAll('[data-toggle-subject]').forEach((btn) => {
+          btn.addEventListener('click', function () {
+            const s = this.getAttribute('data-toggle-subject');
+            if (collapsedSubjects.has(s)) collapsedSubjects.delete(s);
+            else collapsedSubjects.add(s);
+            renderBank();
+          });
+        });
+
+        container.querySelectorAll('[data-toggle-topic]').forEach((btn) => {
+          btn.addEventListener('click', function () {
+            const k = this.getAttribute('data-toggle-topic');
+            if (collapsedTopics.has(k)) collapsedTopics.delete(k);
+            else collapsedTopics.add(k);
+            renderBank();
+          });
+        });
+
+        container.querySelectorAll('.card-select-chk').forEach((chk) => {
+          chk.addEventListener('change', function () {
+            const id = this.getAttribute('data-id');
+            if (this.checked) selectedCardIds.add(id);
+            else selectedCardIds.delete(id);
+            updateBulkDeleteButton();
+          });
+        });
+
+        container.querySelectorAll('.edit-card-btn').forEach((btn) => {
+          btn.addEventListener('click', function () {
+            openCardEditor(this.getAttribute('data-id'));
+          });
+        });
+
+        container.querySelectorAll('.bank-tag-pill').forEach((pill) => {
+          pill.addEventListener('click', function () {
+            const tg = this.getAttribute('data-tag');
+            const sel = document.getElementById('bankTagFilter');
+            sel.value = (sel.value === tg) ? 'all' : tg;
+            renderBank();
+          });
+        });
+
+        container.querySelectorAll('.delete-card-btn').forEach((btn) => {
+          btn.addEventListener('click', function () {
+            const id = this.getAttribute('data-id');
+            askConfirm('Delete Flashcard', 'Are you sure you want to delete this flashcard?', 'Delete', async () => {
+              cards = cards.filter((c) => c.id !== id);
+              selectedCardIds.delete(id);
+              await deleteCardsFromDb([id]);
+              renderBank();
+              showToast('Card deleted.');
+            });
+          });
+        });
+      }
+
+      /* ==================== ADD / EDIT CARD PAGE ==================== */
+      function populateEditorDatalists() {
+        const subs = Array.from(new Set(cards.map((c) => c.subject))).sort();
+        const tops = Array.from(new Set(cards.map((c) => c.topic))).sort();
+        document.getElementById('subjectDatalist').innerHTML = subs.map((s) => '<option value="' + escapeHtml(s) + '">').join('');
+        document.getElementById('topicDatalist').innerHTML = tops.map((t) => '<option value="' + escapeHtml(t) + '">').join('');
+      }
+
+      function updateEditorPreviews() {
+        document.getElementById('frontLivePreview').innerHTML = renderRichContent(document.getElementById('cardFrontInput').value);
+        document.getElementById('backLivePreview').innerHTML = renderRichContent(document.getElementById('cardBackInput').value);
+      }
+
+      function renderEditorImages() {
+        const fWrap = document.getElementById('frontImgPreviewWrap');
+        const bWrap = document.getElementById('backImgPreviewWrap');
+        fWrap.innerHTML = frontImageData ? '<img class="flashcard-img" src="' + escapeHtml(frontImageData) + '" alt="Front preview" />' : '';
+        bWrap.innerHTML = backImageData ? '<img class="flashcard-img" src="' + escapeHtml(backImageData) + '" alt="Back preview" />' : '';
+        document.getElementById('clearFrontImgBtn').style.display = frontImageData ? 'inline-flex' : 'none';
+        document.getElementById('clearBackImgBtn').style.display = backImageData ? 'inline-flex' : 'none';
+      }
+
+      function openCardEditor(cardId) {
+        populateEditorDatalists();
+        const form = document.getElementById('cardEditorForm');
+        form.reset();
+        frontImageData = '';
+        backImageData = '';
+
+        if (cardId) {
+          const card = cards.find((c) => c.id === cardId);
+          if (card) {
+            document.getElementById('editorTitle').textContent = 'Edit Flashcard';
+            document.getElementById('editCardId').value = card.id;
+            document.getElementById('cardSubjectInput').value = card.subject;
+            document.getElementById('cardTopicInput').value = card.topic;
+            document.getElementById('cardSubtopicInput').value = card.subtopic || '';
+            document.getElementById('cardFrontInput').value = card.front;
+            document.getElementById('cardBackInput').value = card.back;
+            document.getElementById('cardTagsInput').value = (card.tags || []).join(', ');
+            frontImageData = card.frontImage || '';
+            backImageData = card.backImage || '';
+            if (frontImageData && !frontImageData.startsWith('data:')) {
+              document.getElementById('frontImageUrl').value = frontImageData;
+            }
+            if (backImageData && !backImageData.startsWith('data:')) {
+              document.getElementById('backImageUrl').value = backImageData;
+            }
+          }
+        } else {
+          document.getElementById('editorTitle').textContent = 'Add New Flashcard';
+          document.getElementById('editCardId').value = '';
+        }
+
+        renderEditorImages();
+        updateEditorPreviews();
+        switchView('editor');
+      }
+
+      function compressImageFile(file, callback) {
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+          const img = new Image();
+          img.onload = function () {
+            const maxDim = 1400;
+            let w = img.width;
+            let h = img.height;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
+              else { w = Math.round(w * (maxDim / h)); h = maxDim; }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            callback(canvas.toDataURL('image/jpeg', 0.82));
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      /* ==================== BULK IMPORT (CSV & JSON) ==================== */
+      function updateImportGuide() {
+        const box = document.getElementById('importGuideBox');
+        document.getElementById('tabImportCsv').classList.toggle('selected', importFormat === 'csv');
+        document.getElementById('tabImportJson').classList.toggle('selected', importFormat === 'json');
+        if (importFormat === 'csv') {
+          box.innerHTML =
+            '<strong>CSV Format Guide:</strong><br>' +
+            'Header row: <code>subject,topic,subtopic,front,back,tags</code><br>' +
+            '&bull; Separate multiple tags with semicolons or pipes (e.g. <code>formula;optics</code>).<br>' +
+            '&bull; Wrap fields containing commas or line breaks in double quotes <code>"..."</code>. Supports UTF-8 (English &amp; हिन्दी), <code>$math$</code>, and <code>`code`</code>.';
+        } else {
+          box.innerHTML =
+            '<strong>JSON Format Guide:</strong><br>' +
+            'Provide a JSON array of card objects:<br>' +
+            '<code>[{"subject":"Physics","topic":"Optics","subtopic":"Lenses","front":"...","back":"...","tags":["optics"]}]</code>';
+        }
+      }
+
+      function parseCsv(text) {
+        const rows = [];
+        let row = [];
+        let field = '';
+        let inQuotes = false;
+        for (let i = 0; i < text.length; i++) {
+          const ch = text[i];
+          if (inQuotes) {
+            if (ch === '"' && text[i + 1] === '"') {
+              field += '"';
+              i++;
+            } else if (ch === '"') {
+              inQuotes = false;
+            } else {
+              field += ch;
+            }
+          } else {
+            if (ch === '"') inQuotes = true;
+            else if (ch === ',') { row.push(field); field = ''; }
+            else if (ch === '\n' || ch === '\r') {
+              if (ch === '\r' && text[i + 1] === '\n') i++;
+              row.push(field);
+              if (row.some((cell) => cell.trim() !== '')) rows.push(row);
+              row = [];
+              field = '';
+            } else {
+              field += ch;
+            }
+          }
+        }
+        row.push(field);
+        if (row.some((cell) => cell.trim() !== '')) rows.push(row);
+        return rows;
+      }
+
+      async function handleBulkImport() {
+        const raw = (document.getElementById('importTextArea').value || '').trim();
+        if (!raw) {
+          showToast('Please upload a file or paste CSV/JSON content.');
+          return;
+        }
+        let imported = [];
+        try {
+          if (importFormat === 'json' || raw.startsWith('[') || raw.startsWith('{')) {
+            const parsed = JSON.parse(raw);
+            const arr = Array.isArray(parsed) ? parsed : (parsed.cards || []);
+            arr.forEach((item) => {
+              if (item.subject && item.topic && item.front && item.back) {
+                imported.push({
+                  id: item.id || ('card-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7)),
+                  subject: String(item.subject).trim(),
+                  topic: String(item.topic).trim(),
+                  subtopic: String(item.subtopic || '').trim(),
+                  front: String(item.front),
+                  back: String(item.back),
+                  tags: Array.isArray(item.tags) ? item.tags.map(String) : String(item.tags || '').split(/[;,]/).map((t) => t.trim()).filter(Boolean),
+                  frontImage: String(item.frontImage || ''),
+                  backImage: String(item.backImage || ''),
+                  difficulty: item.difficulty || 'new',
+                  reviewCount: Number(item.reviewCount) || 0,
+                  nextReviewAt: Number(item.nextReviewAt) || 0,
+                  createdAt: Date.now(),
+                  updatedAt: Date.now()
+                });
+              }
+            });
+          } else {
+            const rows = parseCsv(raw);
+            if (rows.length < 2) throw new Error('CSV needs a header row and at least one data row.');
+            const headers = rows[0].map((h) => h.trim().toLowerCase());
+            const idxSub = headers.indexOf('subject');
+            const idxTop = headers.indexOf('topic');
+            const idxSubTop = headers.indexOf('subtopic');
+            const idxFront = headers.indexOf('front');
+            const idxBack = headers.indexOf('back');
+            const idxTags = headers.indexOf('tags');
+            if (idxSub === -1 || idxTop === -1 || idxFront === -1 || idxBack === -1) {
+              throw new Error('CSV header must include subject, topic, front, and back.');
+            }
+            for (let r = 1; r < rows.length; r++) {
+              const cols = rows[r];
+              const sub = (cols[idxSub] || '').trim();
+              const top = (cols[idxTop] || '').trim();
+              const fr = (cols[idxFront] || '').trim();
+              const bk = (cols[idxBack] || '').trim();
+              if (!sub || !top || !fr || !bk) continue;
+              const tagsRaw = idxTags !== -1 ? (cols[idxTags] || '') : '';
+              imported.push({
+                id: 'card-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7) + '-' + r,
+                subject: sub,
+                topic: top,
+                subtopic: idxSubTop !== -1 ? (cols[idxSubTop] || '').trim() : '',
+                front: fr,
+                back: bk,
+                tags: tagsRaw.split(/[;|]/).map((t) => t.trim()).filter(Boolean),
+                frontImage: '',
+                backImage: '',
+                difficulty: 'new',
+                reviewCount: 0,
+                nextReviewAt: 0,
+                createdAt: Date.now(),
+                updatedAt: Date.now()
+              });
+            }
+          }
+        } catch (err) {
+          showToast('Import error: ' + err.message);
+          return;
+        }
+
+        if (imported.length === 0) {
+          showToast('No valid cards found to import.');
+          return;
+        }
+        const skipDupes = document.getElementById('importSkipDuplicatesChk').checked;
+        let skipped = 0;
+        let toAdd = imported;
+        if (skipDupes) {
+          const normKey = (c) => (c.subject || '').trim().toLowerCase() + '||' + (c.topic || '').trim().toLowerCase() + '||' + (c.front || '').trim().toLowerCase();
+          const seen = new Set(cards.map(normKey));
+          toAdd = [];
+          imported.forEach((c) => {
+            const k = normKey(c);
+            if (seen.has(k)) {
+              skipped++;
+            } else {
+              seen.add(k);
+              toAdd.push(c);
+            }
+          });
+        }
+        if (toAdd.length === 0) {
+          showToast('All ' + skipped + ' card(s) were skipped as duplicates.');
+          return;
+        }
+        cards = cards.concat(toAdd);
+        await bulkPutCardsInDb(toAdd);
+        closeModal('importModal');
+        document.getElementById('importTextArea').value = '';
+        renderBank();
+        showToast('Imported ' + toAdd.length + ' flashcards' + (skipped > 0 ? ' (' + skipped + ' duplicate(s) skipped).' : '!'));
+      }
+
+      /* ==================== ENCRYPTED BACKUP & RESTORE (AES-GCM) ==================== */
+      function bufToBase64(buf) {
+        const bytes = new Uint8Array(buf);
+        let bin = '';
+        for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        return btoa(bin);
+      }
+
+      function base64ToBuf(b64) {
+        const bin = atob(b64);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        return bytes.buffer;
+      }
+
+      async function deriveAesKey(passphrase, saltBytes) {
+        const enc = new TextEncoder();
+        const keyMat = await crypto.subtle.importKey('raw', enc.encode(passphrase), 'PBKDF2', false, ['deriveKey']);
+        return crypto.subtle.deriveKey(
+          { name: 'PBKDF2', salt: saltBytes, iterations: 100000, hash: 'SHA-256' },
+          keyMat,
+          { name: 'AES-GCM', length: 256 },
+          false,
+          ['encrypt', 'decrypt']
+        );
+      }
+
+      async function createEncryptedBackup() {
+        const p1 = document.getElementById('backupPassInput').value;
+        const p2 = document.getElementById('backupPassConfirmInput').value;
+        if (!p1 || p1.length < 4) {
+          showToast('Passphrase must be at least 4 characters.');
+          return;
+        }
+        if (p1 !== p2) {
+          showToast('Passphrases do not match.');
+          return;
+        }
+        try {
+          const salt = crypto.getRandomValues(new Uint8Array(16));
+          const iv = crypto.getRandomValues(new Uint8Array(12));
+          const key = await deriveAesKey(p1, salt);
+          const payload = JSON.stringify({ version: '1.0.0', exportedAt: new Date().toISOString(), cards: cards, stats: appStats });
+          const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, new TextEncoder().encode(payload));
+          const envelope = {
+            format: 'flashvault-encrypted-v1',
+            salt: bufToBase64(salt.buffer),
+            iv: bufToBase64(iv.buffer),
+            ciphertext: bufToBase64(cipher)
+          };
+          downloadFile('flashvault-backup-' + new Date().toISOString().slice(0, 10) + '.fvault.json', JSON.stringify(envelope, null, 2), 'application/json');
+          closeModal('backupModal');
+          document.getElementById('backupPassInput').value = '';
+          document.getElementById('backupPassConfirmInput').value = '';
+          showToast('Encrypted backup downloaded.');
+        } catch (err) {
+          showToast('Encryption failed: ' + err.message);
+        }
+      }
+
+      async function restoreEncryptedBackup() {
+        const fileInput = document.getElementById('restoreFileInput');
+        const pass = document.getElementById('restorePassInput').value;
+        const mode = document.getElementById('restoreModeSelect').value;
+        if (!fileInput.files || !fileInput.files[0]) {
+          showToast('Please select a backup file.');
+          return;
+        }
+        if (!pass) {
+          showToast('Please enter the backup passphrase.');
+          return;
+        }
+        try {
+          const text = await fileInput.files[0].text();
+          const env = JSON.parse(text);
+          if (env.format !== 'flashvault-encrypted-v1') throw new Error('Unrecognized backup format.');
+          const salt = new Uint8Array(base64ToBuf(env.salt));
+          const iv = new Uint8Array(base64ToBuf(env.iv));
+          const key = await deriveAesKey(pass, salt);
+          const plainBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, base64ToBuf(env.ciphertext));
+          const data = JSON.parse(new TextDecoder().decode(plainBuf));
+          if (!Array.isArray(data.cards)) throw new Error('Backup contains no valid cards.');
+
+          if (mode === 'replace') {
+            cards = data.cards;
+            if (data.stats) appStats = data.stats;
+          } else {
+            const map = new Map(cards.map((c) => [c.id, c]));
+            data.cards.forEach((c) => map.set(c.id, c));
+            cards = Array.from(map.values());
+          }
+          await persistAllCards();
+          saveStats();
+          closeModal('restoreModal');
+          document.getElementById('restorePassInput').value = '';
+          renderBank();
+          renderHome();
+          showToast('Restored ' + data.cards.length + ' cards from encrypted backup.');
+        } catch (err) {
+          showToast('Restore failed: Incorrect passphrase or corrupted file.');
+        }
+      }
+
+      function csvEscape(val) {
+        const str = String(val === undefined || val === null ? '' : val);
+        if (/[",\r\n]/.test(str)) {
+          return '"' + str.replace(/"/g, '""') + '"';
+        }
+        return str;
+      }
+
+      function exportCardsPlain(fmt) {
+        const scope = document.getElementById('exportScopeSelect').value;
+        const list = scope === 'filtered' ? getFilteredBankCards() : cards.slice();
+        if (list.length === 0) {
+          showToast('No cards available to export.');
+          return;
+        }
+        const dateTag = new Date().toISOString().slice(0, 10);
+        if (fmt === 'csv') {
+          const header = 'subject,topic,subtopic,front,back,tags';
+          const lines = list.map((c) => [
+            csvEscape(c.subject),
+            csvEscape(c.topic),
+            csvEscape(c.subtopic || ''),
+            csvEscape(c.front),
+            csvEscape(c.back),
+            csvEscape((c.tags || []).join(';'))
+          ].join(','));
+          const csvContent = '\uFEFF' + [header].concat(lines).join('\r\n');
+          downloadFile('flashvault-cards-' + dateTag + '.csv', csvContent, 'text/csv;charset=utf-8');
+        } else {
+          const clean = list.map((c) => ({
+            subject: c.subject,
+            topic: c.topic,
+            subtopic: c.subtopic || '',
+            front: c.front,
+            back: c.back,
+            tags: c.tags || [],
+            frontImage: c.frontImage || '',
+            backImage: c.backImage || ''
+          }));
+          downloadFile('flashvault-cards-' + dateTag + '.json', JSON.stringify(clean, null, 2), 'application/json');
+        }
+        closeModal('exportModal');
+        showToast('Exported ' + list.length + ' card(s) as ' + fmt.toUpperCase() + '.');
+      }
+
+      function downloadFile(filename, content, mime) {
+        const blob = new Blob([content], { type: mime });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+
+      async function initOfflinePersistence() {
+        window.addEventListener('online', () => {
+          cacheAppShell();
+          showToast('Back online. Local cache synced.');
+        });
+        window.addEventListener('offline', () => {
+          showToast('You are offline. Running from browser cache.');
+        });
+        try {
+          if (navigator.storage && navigator.storage.persist) {
+            await navigator.storage.persist();
+          }
+        } catch (e) {}
+        try {
+          const proto = window.location.protocol;
+          if ((proto === 'https:' || proto === 'http:') && 'serviceWorker' in navigator) {
+            await navigator.serviceWorker.register('./sw.js');
+          }
+        } catch (e) {}
+        await cacheAppShell();
+      }
+
+      async function cacheAppShell() {
+        if (!navigator.onLine) return;
+        try {
+          const proto = window.location.protocol;
+          if ((proto === 'https:' || proto === 'http:') && 'caches' in window) {
+            const cache = await caches.open('flashvault-app-v1');
+            await cache.add(window.location.href);
+          }
+        } catch (e) {}
+        safeSetLS('flashvault_cached_at', String(Date.now()));
+      }
+
+      /* ==================== EVENT BINDINGS ==================== */
+      function bindEvents() {
+        // Theme
+        const moonSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+        const sunSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+        function syncThemeIcon(isDark) {
+          const btn = document.getElementById('themeToggleBtn');
+          btn.innerHTML = isDark ? sunSvg : moonSvg;
+          btn.setAttribute('aria-label', isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+          btn.setAttribute('title', isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+        }
+        const savedTheme = safeGetLS(LS_THEME_KEY, 'light');
+        const initDark = savedTheme === 'dark';
+        if (initDark) document.documentElement.classList.add('dark');
+        syncThemeIcon(initDark);
+        document.getElementById('themeToggleBtn').addEventListener('click', function () {
+          const isDark = document.documentElement.classList.toggle('dark');
+          safeSetLS(LS_THEME_KEY, isDark ? 'dark' : 'light');
+          syncThemeIcon(isDark);
+        });
+
+        // Disable copy on Home and Practice pages
+        ['view-home', 'view-practice'].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.addEventListener('copy', (e) => e.preventDefault());
+          }
+        });
+
+        // Navigation
+        document.getElementById('brandHomeBtn').addEventListener('click', () => switchView('home'));
+        document.querySelectorAll('.nav-btn').forEach((btn) => {
+          btn.addEventListener('click', function () {
+            switchView(this.getAttribute('data-nav'));
+          });
+        });
+
+        // Home buttons
+        document.getElementById('dailyGoalInput').addEventListener('change', function () {
+          const val = Math.max(1, Math.min(500, parseInt(this.value, 10) || 20));
+          appStats.dailyGoal = val;
+          this.value = val;
+          saveStats();
+          renderHome();
+          showToast('Daily goal updated to ' + val + ' cards.');
+        });
+        document.getElementById('homeStartPracticeBtn').addEventListener('click', () => switchView('practice'));
+        document.getElementById('homeAddCardBtn').addEventListener('click', () => openCardEditor(null));
+
+        document.getElementById('quickHardBtn').addEventListener('click', () => quickPracticeDifficulty('hard'));
+        document.getElementById('quickGoodBtn').addEventListener('click', () => quickPracticeDifficulty('good'));
+        document.getElementById('quickEasyBtn').addEventListener('click', () => quickPracticeDifficulty('easy'));
+        document.getElementById('quickDueBtn').addEventListener('click', () => quickPracticeDifficulty('due'));
+
+        document.querySelectorAll('#homeDifficultyTabs .topic-chip').forEach((btn) => {
+          btn.addEventListener('click', function () {
+            homeDiffTab = this.getAttribute('data-homediff');
+            document.querySelectorAll('#homeDifficultyTabs .topic-chip').forEach((b) => b.classList.toggle('selected', b === this));
+            renderHomeDifficultyList();
+          });
+        });
+
+        // Practice setup & stage
+        document.getElementById('practiceSubjectSelect').addEventListener('change', function () {
+          populateTopicChipsForSubject(this.value);
+        });
+        document.getElementById('practiceDifficultyFilter').addEventListener('change', updatePracticeMatchCount);
+        document.getElementById('practiceTagFilter').addEventListener('change', updatePracticeMatchCount);
+        document.getElementById('selectAllTopicsBtn').addEventListener('click', function () {
+          const sub = document.getElementById('practiceSubjectSelect').value;
+          populateTopicChipsForSubject(sub);
+        });
+        document.getElementById('clearTopicsBtn').addEventListener('click', function () {
+          selectedTopics.clear();
+          document.querySelectorAll('#practiceTopicChips .topic-chip').forEach((b) => b.classList.remove('selected'));
+          updatePracticeMatchCount();
+        });
+        document.querySelectorAll('.preset-count-btn').forEach((btn) => {
+          btn.addEventListener('click', function () {
+            const val = parseInt(this.getAttribute('data-count'), 10);
+            const matchLen = getFilteredPracticeCards().length || 10;
+            document.getElementById('practiceCountInput').value = val > 1000 ? matchLen : val;
+          });
+        });
+        document.getElementById('beginSessionBtn').addEventListener('click', function () {
+          startPracticeWithCards(getFilteredPracticeCards());
+        });
+
+        document.getElementById('flashcardBox').addEventListener('click', function (e) {
+          if (e.target.closest('button')) return;
+          flipCurrentCard();
+        });
+        document.getElementById('flipCardBtn').addEventListener('click', flipCurrentCard);
+        document.getElementById('nextCardBtn').addEventListener('click', nextPracticeCard);
+        document.querySelectorAll('.rating-btn').forEach((btn) => {
+          btn.addEventListener('click', function () {
+            rateCurrentCard(this.getAttribute('data-rate'));
+          });
+        });
+        document.getElementById('retryHardSessionBtn').addEventListener('click', function () {
+          const hardPool = cards.filter((c) => session.hardIds.includes(c.id));
+          startPracticeWithCards(hardPool);
+        });
+        document.getElementById('newPracticeSetupBtn').addEventListener('click', renderPracticeSetup);
+        document.getElementById('summaryGoHomeBtn').addEventListener('click', () => switchView('home'));
+
+        // Bank controls
+        document.getElementById('bankAddCardBtn').addEventListener('click', () => openCardEditor(null));
+        document.getElementById('bankSearchInput').addEventListener('input', renderBank);
+        document.getElementById('bankSubjectFilter').addEventListener('change', renderBank);
+        document.getElementById('bankDiffFilter').addEventListener('change', renderBank);
+        document.getElementById('bankTagFilter').addEventListener('change', renderBank);
+        document.getElementById('toggleAllGroupsBtn').addEventListener('click', function () {
+          allCollapsed = !allCollapsed;
+          collapsedSubjects.clear();
+          collapsedTopics.clear();
+          if (allCollapsed) {
+            cards.forEach((c) => collapsedSubjects.add(c.subject));
+            this.textContent = 'Expand All';
+          } else {
+            this.textContent = 'Collapse All';
+          }
+          renderBank();
+        });
+        document.getElementById('selectVisibleBtn').addEventListener('click', function () {
+          getFilteredBankCards().forEach((c) => selectedCardIds.add(c.id));
+          renderBank();
+        });
+        document.getElementById('clearSelectionBtn').addEventListener('click', function () {
+          selectedCardIds.clear();
+          renderBank();
+        });
+        document.getElementById('bulkDeleteBtn').addEventListener('click', function () {
+          const count = selectedCardIds.size;
+          if (count === 0) return;
+          askConfirm('Bulk Delete Cards', 'Delete ' + count + ' selected flashcard(s)? This cannot be undone.', 'Delete ' + count, async () => {
+            const toDel = Array.from(selectedCardIds);
+            cards = cards.filter((c) => !selectedCardIds.has(c.id));
+            selectedCardIds.clear();
+            await deleteCardsFromDb(toDel);
+            renderBank();
+            showToast(count + ' cards deleted.');
+          });
+        });
+
+        // Editor controls
+        document.getElementById('editorCancelBtn').addEventListener('click', () => switchView('bank'));
+        document.getElementById('editorResetBtn').addEventListener('click', () => openCardEditor(document.getElementById('editCardId').value || null));
+        document.getElementById('cardFrontInput').addEventListener('input', updateEditorPreviews);
+        document.getElementById('cardBackInput').addEventListener('input', updateEditorPreviews);
+
+        document.querySelectorAll('.editor-toolbar').forEach((tb) => {
+          const targetId = tb.getAttribute('data-target');
+          tb.querySelectorAll('.tb-btn').forEach((btn) => {
+            btn.addEventListener('click', function () {
+              const ta = document.getElementById(targetId);
+              const start = ta.selectionStart;
+              const end = ta.selectionEnd;
+              const val = ta.value;
+              const wrap = this.getAttribute('data-wrap');
+              const ins = this.getAttribute('data-insert');
+              if (wrap) {
+                const selected = val.slice(start, end) || 'text';
+                ta.value = val.slice(0, start) + wrap + selected + wrap + val.slice(end);
+                ta.focus();
+                ta.selectionStart = start + wrap.length;
+                ta.selectionEnd = start + wrap.length + selected.length;
+              } else if (ins) {
+                ta.value = val.slice(0, start) + ins + val.slice(end);
+                ta.focus();
+                ta.selectionStart = ta.selectionEnd = start + ins.length;
+              }
+              updateEditorPreviews();
+            });
+          });
+        });
+
+        document.getElementById('frontImageFile').addEventListener('change', function () {
+          if (this.files && this.files[0]) {
+            compressImageFile(this.files[0], (dataUrl) => {
+              frontImageData = dataUrl;
+              document.getElementById('frontImageUrl').value = '';
+              renderEditorImages();
+            });
+          }
+        });
+        document.getElementById('backImageFile').addEventListener('change', function () {
+          if (this.files && this.files[0]) {
+            compressImageFile(this.files[0], (dataUrl) => {
+              backImageData = dataUrl;
+              document.getElementById('backImageUrl').value = '';
+              renderEditorImages();
+            });
+          }
+        });
+        document.getElementById('frontImageUrl').addEventListener('input', function () {
+          frontImageData = this.value.trim();
+          renderEditorImages();
+        });
+        document.getElementById('backImageUrl').addEventListener('input', function () {
+          backImageData = this.value.trim();
+          renderEditorImages();
+        });
+        document.getElementById('clearFrontImgBtn').addEventListener('click', function () {
+          frontImageData = '';
+          document.getElementById('frontImageUrl').value = '';
+          document.getElementById('frontImageFile').value = '';
+          renderEditorImages();
+        });
+        document.getElementById('clearBackImgBtn').addEventListener('click', function () {
+          backImageData = '';
+          document.getElementById('backImageUrl').value = '';
+          document.getElementById('backImageFile').value = '';
+          renderEditorImages();
+        });
+
+        document.getElementById('cardEditorForm').addEventListener('submit', async function (e) {
+          e.preventDefault();
+          const id = document.getElementById('editCardId').value;
+          const subject = document.getElementById('cardSubjectInput').value.trim();
+          const topic = document.getElementById('cardTopicInput').value.trim();
+          const subtopic = document.getElementById('cardSubtopicInput').value.trim();
+          const front = document.getElementById('cardFrontInput').value.trim();
+          const back = document.getElementById('cardBackInput').value.trim();
+          const tags = document.getElementById('cardTagsInput').value.split(',').map((t) => t.trim()).filter(Boolean);
+
+          if (!subject || !topic || !front || !back) {
+            showToast('Please fill in Subject, Topic, Front, and Back.');
+            return;
+          }
+
+          if (id) {
+            const idx = cards.findIndex((c) => c.id === id);
+            if (idx !== -1) {
+              cards[idx] = Object.assign({}, cards[idx], {
+                subject, topic, subtopic, front, back, tags,
+                frontImage: frontImageData,
+                backImage: backImageData,
+                updatedAt: Date.now()
+              });
+            }
+            showToast('Flashcard updated.');
+          } else {
+            const norm = (str) => (str || '').trim().toLowerCase();
+            const isDup = cards.some((c) => norm(c.subject) === norm(subject) && norm(c.topic) === norm(topic) && norm(c.front) === norm(front));
+            const saveNew = async () => {
+              const newCard = {
+                id: 'card-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+                subject, topic, subtopic, front, back, tags,
+                frontImage: frontImageData,
+                backImage: backImageData,
+                difficulty: 'new',
+                reviewCount: 0,
+                nextReviewAt: 0,
+                createdAt: Date.now(),
+                updatedAt: Date.now()
+              };
+              cards.unshift(newCard);
+              await putCardInDb(newCard);
+              showToast('New flashcard added.');
+              switchView('bank');
+            };
+            if (isDup) {
+              askConfirm('Duplicate Card Detected', 'A card with the same Subject, Topic, and Front already exists. Add anyway?', 'Add Anyway', saveNew);
+              return;
+            }
+            await saveNew();
+            return;
+          }
+
+          const savedCard = cards.find((c) => c.id === id);
+          if (savedCard) await putCardInDb(savedCard);
+          switchView('bank');
+        });
+
+        // Modals
+        document.querySelectorAll('[data-close-modal]').forEach((btn) => {
+          btn.addEventListener('click', function () {
+            closeModal(this.getAttribute('data-close-modal'));
+          });
+        });
+
+        document.getElementById('openImportModalBtn').addEventListener('click', () => {
+          updateImportGuide();
+          openModal('importModal');
+        });
+        document.getElementById('tabImportCsv').addEventListener('click', () => { importFormat = 'csv'; updateImportGuide(); });
+        document.getElementById('tabImportJson').addEventListener('click', () => { importFormat = 'json'; updateImportGuide(); });
+        document.getElementById('importFileInput').addEventListener('change', async function () {
+          if (this.files && this.files[0]) {
+            const name = this.files[0].name.toLowerCase();
+            if (name.endsWith('.json')) { importFormat = 'json'; updateImportGuide(); }
+            else if (name.endsWith('.csv')) { importFormat = 'csv'; updateImportGuide(); }
+            document.getElementById('importTextArea').value = await this.files[0].text();
+          }
+        });
+        document.getElementById('downloadSampleCsvBtn').addEventListener('click', () => {
+          const sample = 'subject,topic,subtopic,front,back,tags\n"Physics","Thermodynamics","First Law","State the First Law of Thermodynamics.","$$\\Delta U = Q - W$$","physics;thermo"\n"हिन्दी","मुहावरे","सामान्य","**आँखों का तारा** मुहावरे का अर्थ लिखिए।","बहुत प्यारा होना।","हिन्दी;मुहावरे"';
+          downloadFile('flashvault-sample.csv', sample, 'text/csv;charset=utf-8');
+        });
+        document.getElementById('downloadSampleJsonBtn').addEventListener('click', () => {
+          const sample = JSON.stringify([
+            { subject: 'Chemistry', topic: 'Atomic Structure', subtopic: 'Bohr Model', front: 'Energy of $n$-th orbit in Hydrogen atom?', back: '$$E_n = -\\frac{13.6}{n^2}\\text{ eV}$$', tags: ['chemistry', 'formula'] }
+          ], null, 2);
+          downloadFile('flashvault-sample.json', sample, 'application/json');
+        });
+        document.getElementById('runImportBtn').addEventListener('click', handleBulkImport);
+
+        document.getElementById('openExportModalBtn').addEventListener('click', () => {
+          const filtCount = getFilteredBankCards().length;
+          const sel = document.getElementById('exportScopeSelect');
+          sel.options[0].textContent = 'Currently Filtered Cards (' + filtCount + ')';
+          sel.options[1].textContent = 'All Cards in Bank (' + cards.length + ')';
+          openModal('exportModal');
+        });
+        document.getElementById('exportCsvBtn').addEventListener('click', () => exportCardsPlain('csv'));
+        document.getElementById('exportJsonBtn').addEventListener('click', () => exportCardsPlain('json'));
+        document.getElementById('openBackupModalBtn').addEventListener('click', () => openModal('backupModal'));
+        document.getElementById('confirmBackupBtn').addEventListener('click', createEncryptedBackup);
+
+        document.getElementById('openRestoreModalBtn').addEventListener('click', () => openModal('restoreModal'));
+        document.getElementById('confirmRestoreBtn').addEventListener('click', restoreEncryptedBackup);
+
+        document.getElementById('confirmModalOkBtn').addEventListener('click', function () {
+          closeModal('confirmModal');
+          if (pendingConfirmCallback) {
+            const cb = pendingConfirmCallback;
+            pendingConfirmCallback = null;
+            cb();
+          }
+        });
+      }
+
+      /* ==================== INIT ==================== */
+      async function init() {
+        loadStats();
+        await loadCards();
+        bindEvents();
+        initOfflinePersistence();
+        try {
+          history.replaceState({ view: 'home' }, '', '#home');
+        } catch (e) {}
+        renderHome();
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
